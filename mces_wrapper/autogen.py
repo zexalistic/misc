@@ -8,6 +8,7 @@ import logging
 import shutil
 from ctypes import *
 from structure_class import *
+from enum_class import *
 import time
 
 
@@ -20,38 +21,84 @@ class Func:
         self.arg_types = list()
         self.arg_names = list()
         self.arg_pointer_flags = list()
-        self.ret_types = None
-        self.header_file = None
         self.arg_inout_list = list()
+        self.ret_type = None
+        self.header_file = None
+
 
 
 class _Enum:
     """
     A class recording the name, members, values of a enumerate type
     """
+
     def __init__(self):
         self.enum_name = None
         self.enum_members = list()
         self.enum_values = list()
 
 
-class TypeParser:
+class EnumParser:
+    """
+    Parse the header files in the folder. Catch the enum types and sort them into enum_class.py
+    """
+    def __init__(self, h_files):
+        self.h_files = h_files
+        self.generate_enum_class()
+
+    def generate_enum_class(self):
+        """
+        generate enum_class.py
+        """
+        with open('enum_class.py', 'w') as fp:
+            fp.write('from enum import Enum, unique\n\n')
+
+        for h_file in self.h_files:
+            with open(h_file) as fp:
+                contents = fp.read()
+                contents = re.findall(r'typedef enum[^;]+;', contents)  # find all enumerate types
+                for content in contents:
+                    enum = _Enum()
+                    content = re.sub(r'/\*.*\*/', '', content)  # remove comments
+                    tmp = re.split(r'[{}]', content)  # split the typedef enum{ *** } name;
+                    enum_infos = re.sub(r'\s', '', tmp[1])
+                    enum.enum_name = re.sub(r'[\s;]', '', tmp[2])
+                    enum_infos = enum_infos.split(',')
+                    enum_infos = list(filter(None, enum_infos))
+                    for default_value, enum_info in enumerate(enum_infos):
+                        if '=' in enum_info:
+                            enum_member = enum_info.split('=')[0]
+                            enum_value = enum_info.split('=')[1]
+                            if '0x' in enum_value:
+                                enum_value = int(enum_value, 16)
+                        else:
+                            enum_member = enum_info
+                            enum_value = default_value
+
+                        enum.enum_members.append(enum_member)
+                        enum.enum_values.append(enum_value)
+
+                    with open('enum_class.py', 'a') as f:
+                        f.write(f'@unique\nclass {enum.enum_name}(Enum):\n')
+                        for member, value in zip(enum.enum_members, enum.enum_values):
+                            f.write(f'    {member} = {value}\n')
+                        f.write('\n\n')
+
+
+class TypeDict:
     """
     Parse the header files in the folder. Get the mapping relationship between customized types and C types
     """
     def __init__(self):
-        self.folder = os.path.join('..', 'C112GX4')
         self.basic_type_dict = dict()
         self.enum_class_list = list()
         self.structure_class_list = list()
         self.special_type_dict = dict()
 
-        self.generate_enum_class()
-        # load
-        # self.load_basic_type_dict()
-        # self.load_enum_class_list()
-        # self.load_structure_class_list()
-        # self.load_special_type_dict()
+        self.load_basic_type_dict()
+        self.load_enum_class_list()
+        self.load_structure_class_list()
+        self.load_special_type_dict()
 
     def load_basic_type_dict(self):
         # Common basic types in C
@@ -88,69 +135,18 @@ class TypeParser:
             if re.match(r'class .*\(Structure\):', line):
                 self.structure_class_list.append(line[6:-13])
 
-    def generate_enum_class(self):
-        """
-        generate enum_class.py
-        """
-        with open('enum_class.py', 'w') as fp:
-            fp.write('from enum import Enum, unique\n\n')
-        h_files = glob.glob(os.path.join(self.folder, '*.h'))
-        h_files.append(os.path.join('..', 'mcesdApiTypes.h'))
-
-        for h_file in h_files:
-            with open(h_file) as fp:
-                contents = fp.read()
-                contents = contents.split('typedef enum')
-                contents.pop(0)
-                for content in contents:
-                    enum = _Enum()
-                    enum_info = content.split(';')[0].replace('\n', '')
-                    enum_info = enum_info.split('}')
-                    enum.enum_name = enum_info[1].strip()
-                    enum_info = enum_info[0].split('{')[1]
-                    enum_infos = enum_info.split(',')
-                    enum_infos = list(filter(None, enum_infos))
-                    for default_value, enum_info in enumerate(enum_infos):
-                        if '=' in enum_info:
-                            enum_member = enum_info.split('=')[0].strip()
-                            # remove the comments
-                            if '/*' in enum_member:
-                                enum_member = enum_member.split('*/')[1].strip()
-                            enum_value = enum_info.split('=')[1].strip()
-                            if '/*' in enum_value:
-                                enum_value = enum_value.split('/*')[0].strip()
-                            if '0x' in enum_value:
-                                enum_value = int(enum_value.strip(), 16)
-                        elif '/*' in enum_info:
-                            enum_member = enum_info.split('*/')[1].strip()
-                            if enum_member == '':
-                                continue
-                            else:
-                                enum_value = default_value
-                        else:
-                            enum_value = default_value
-                            enum_member = enum_info
-                        enum.enum_values.append(enum_value)
-                        enum.enum_members.append(enum_member)
-
-                    with open('enum_class.py', 'a') as fp:
-                        fp.write(f'@unique\nclass {enum.enum_name}(Enum):\n')
-                        for member, value in zip(enum.enum_members, enum.enum_values):
-                            fp.write(f'    {member} = {value}\n')
-                        fp.write('\n\n')
-
 
 class HeaderParser:
     """
     Automatically parse the header files
     """
-    def __init__(self):
-        self.folder = os.path.join('..', 'C112GX4')
-        self.type_parser = TypeParser()
+    def __init__(self, h_files):
+        self.h_files = h_files
+        self.type_dict = TypeDict()
         self.func_list = list()
-        self.wrapper = 'mcesFunctionLib.py'
+        self.wrapper = 'mcesFunctionLib.py'             # Output wrapper
         self.dll_name = 'MZDAPILib'
-        self.testcase = 'Testcases_all.py'
+        self.testcase = 'Testcases_all.py'              # Output testcase
 
     def parse(self):
         """
@@ -158,7 +154,7 @@ class HeaderParser:
         get all the functions to be wrapped.
         save those function information(name, argument type, return type) in func_list
         """
-        for h_file in glob.glob(os.path.join(self.folder, '*.h')):
+        for h_file in self.h_files:
             with open(h_file) as fp:
                 contents = fp.read()
                 contents = contents.split('MCESD_STATUS ')
@@ -194,25 +190,25 @@ class HeaderParser:
                         else:
                             arg_type = params[0]
 
-                        if self.type_parser.basic_type_dict.get(arg_type, 0):
-                            arg_type = self.type_parser.basic_type_dict[arg_type]
-                        elif arg_type in self.type_parser.enum_class_list:
+                        if self.type_dict.basic_type_dict.get(arg_type, 0):
+                            arg_type = self.type_dict.basic_type_dict[arg_type]
+                        elif arg_type in self.type_dict.enum_class_list:
                             pass
-                        elif arg_type in self.type_parser.structure_class_list:
+                        elif arg_type in self.type_dict.structure_class_list:
                             pass
-                        elif self.type_parser.special_type_dict.get(arg_type, 0):
+                        elif self.type_dict.special_type_dict.get(arg_type, 0):
                             if arg_type == 'MCESD_FIELD_PTR':
                                 arg_type = 'MCESD_FIELD'
                                 func.arg_pointer_flags.append(1)
                             else:
-                                arg_type = self.type_parser.special_type_dict[arg_type]
+                                arg_type = self.type_dict.special_type_dict[arg_type]
                         else:
                             logging.warning(f'No valid type: {arg_type}； func_name: {func_name}')
 
                         func.arg_inout_list.append(arg_inout)
                         func.arg_types.append(arg_type)
                         func.arg_names.append(arg_name)
-                        func.ret_types = 'c_uint32'
+                        func.ret_type = 'c_uint32'
                         func.header_file = os.path.basename(h_file)
 
                     self.func_list.append(func)
@@ -230,14 +226,14 @@ class HeaderParser:
                 fp.write('    """\n')
                 arg_types = list()
                 for arg_type, arg_name, flag in zip(func.arg_types, func.arg_names, func.arg_pointer_flags):
-                    if arg_type in self.type_parser.enum_class_list:
+                    if arg_type in self.type_dict.enum_class_list:
                         if flag:
                             arg_types.append('POINTER(c_int)')
                             fp.write(f'    :param {arg_name}: A pointer of the enumerate class {arg_type}\n')
                         else:
                             arg_types.append('c_int')
                             fp.write(f'    :param {arg_name}: member from enumerate class {arg_type}\n')
-                    elif arg_type in self.type_parser.structure_class_list:
+                    elif arg_type in self.type_dict.structure_class_list:
                         if flag:
                             arg_types.append(f'POINTER({arg_type})')
                             fp.write(f'    :param {arg_name}: A pointer of the structure class {arg_type}\n')
@@ -256,7 +252,7 @@ class HeaderParser:
                 fp.write(f'    func = {self.dll_name}["{func.func_name}"]\n')
                 arg_types = ', '.join(arg_types)
                 fp.write(f'    func.argtypes = [{arg_types}]\n')
-                fp.write(f'    func.restype = {func.ret_types}\n')
+                fp.write(f'    func.restype = {func.ret_type}\n')
                 fp.write(f'    ret = func({arg_names})\n')
                 fp.write(f'    return ret\n\n\n')
 
@@ -280,14 +276,14 @@ class HeaderParser:
                         if flag:
                             fp.write(f'    {arg_name}_p = {arg_type}({arg_name})\n')
                             arg_name = arg_name + '_p'
-                    elif arg_type in self.type_parser.enum_class_list:
+                    elif arg_type in self.type_dict.enum_class_list:
                         member_names = eval(arg_type).__dict__['_member_names_']
                         fp.write(f'    {arg_name} = {arg_type}.{member_names[0]}.value\n')    # maybe we could iterate
                         logging_infos.append(f'    logging.debug(f"{arg_name}' + ' = {' + f'{arg_name}' + '}")\n')
                         if flag:
                             fp.write(f'    {arg_name}_p = c_long({arg_name})\n')
                             arg_name = arg_name + '_p'
-                    elif arg_type in self.type_parser.structure_class_list:
+                    elif arg_type in self.type_dict.structure_class_list:
                         attr_inits = []
                         attr_list = eval(arg_type).__dict__['_fields_']
                         for attr in attr_list:
@@ -325,7 +321,11 @@ if __name__ == '__main__':
     #                     format='%(levelname)s: %(message)s',
     #                     datefmt='%d-%M-%Y %H:%M:%S')
 
-    head_parser = HeaderParser()
+    h_files = glob.glob(os.path.join(os.path.join('..', 'C112GX4'), '*.h'))
+    h_files.append(os.path.join('..', 'mcesdApiTypes.h'))
+    enum_parser = EnumParser(h_files)
+    h_files = glob.glob(os.path.join(os.path.join('..', 'C112GX4'), '*.h'))
+    head_parser = HeaderParser(h_files)
     # head_parser.parse()
     # head_parser.write_funcs_to_wrapper()
     # head_parser.write_testcase()

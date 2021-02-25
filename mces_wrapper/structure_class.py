@@ -1,10 +1,8 @@
 from ctypes import *
 
-# MZDAPILib = CDLL('..\Debug\MZD.dll')
-
 class S_N5C112GX4_PATTERN_STATISTICS(Structure):
-    _fields_ = [("lock", c_bool),
-                ("pass", c_bool),
+    _fields_ = [("lock", c_int),
+                ("pass", c_int),
                 ("totalBits", c_uint64),
                 ("totalErrorBits", c_uint64),
                ]
@@ -19,7 +17,7 @@ class S_N5C112GX4_EOM_DATA(Structure):
                ]
 
 class S_N5C112GX4_TRAINING_TIMEOUT(Structure):
-    _fields_ = [("enable", c_bool),
+    _fields_ = [("enable", c_int),
                 ("timeout", c_uint16),
                ]
 
@@ -35,7 +33,7 @@ class MCESD_FIELD(Structure):
 class _MCESD_DEV(Structure):
     _fields_ = [("ipMajorRev", c_uint8),
                 ("ipMinorRev", c_uint8),
-                ("devEnabled", c_bool),
+                ("devEnabled", c_int),
                 ("fmcesdReadReg", CFUNCTYPE(c_void_p, c_uint32, POINTER(c_uint32))),
                 ("fmcesdWriteReg", CFUNCTYPE(c_void_p, c_uint32, c_uint32)),
                 ("fmcesdSetPinCfg", CFUNCTYPE(c_void_p, c_uint16, c_uint16)),
@@ -44,14 +42,13 @@ class _MCESD_DEV(Structure):
                 ("appData", c_void_p),
                ]
 
-# We may have errors here
 class S_N5C112GX4_PowerOn(Structure):
     _fields_ = [
         ('unions', c_void_p),
-        ('initTx', c_bool),
-        ('initRx', c_bool),
-        ('txOutputEn', c_bool),
-        ('downloadFw', c_bool),
+        ('initTx', c_int),
+        ('initRx', c_int),
+        ('txOutputEn', c_int),
+        ('downloadFw', c_int),
         ('dataPath', c_int),
         ('refClkSel', c_int),
         ('dataBusWidth', c_int),
@@ -61,8 +58,3 @@ class S_N5C112GX4_PowerOn(Structure):
         ('spdCfg', c_int),
         ('fwDownload', c_void_p)
     ]
-
-
-
-
-

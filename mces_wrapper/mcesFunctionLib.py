@@ -1,10 +1,8 @@
 from ctypes import *
 
-# MZDAPILib = CDLL('..\Debug\MZD.dll')
-
 class S_N5C112GX4_PATTERN_STATISTICS(Structure):
-    _fields_ = [("lock", c_bool),
-                ("pass", c_bool),
+    _fields_ = [("lock", c_int),
+                ("pass", c_int),
                 ("totalBits", c_uint64),
                 ("totalErrorBits", c_uint64),
                ]
@@ -19,7 +17,7 @@ class S_N5C112GX4_EOM_DATA(Structure):
                ]
 
 class S_N5C112GX4_TRAINING_TIMEOUT(Structure):
-    _fields_ = [("enable", c_bool),
+    _fields_ = [("enable", c_int),
                 ("timeout", c_uint16),
                ]
 
@@ -35,7 +33,7 @@ class MCESD_FIELD(Structure):
 class _MCESD_DEV(Structure):
     _fields_ = [("ipMajorRev", c_uint8),
                 ("ipMinorRev", c_uint8),
-                ("devEnabled", c_bool),
+                ("devEnabled", c_int),
                 ("fmcesdReadReg", CFUNCTYPE(c_void_p, c_uint32, POINTER(c_uint32))),
                 ("fmcesdWriteReg", CFUNCTYPE(c_void_p, c_uint32, c_uint32)),
                 ("fmcesdSetPinCfg", CFUNCTYPE(c_void_p, c_uint16, c_uint16)),
@@ -44,14 +42,13 @@ class _MCESD_DEV(Structure):
                 ("appData", c_void_p),
                ]
 
-# We may have errors here
 class S_N5C112GX4_PowerOn(Structure):
     _fields_ = [
         ('unions', c_void_p),
-        ('initTx', c_bool),
-        ('initRx', c_bool),
-        ('txOutputEn', c_bool),
-        ('downloadFw', c_bool),
+        ('initTx', c_int),
+        ('initRx', c_int),
+        ('txOutputEn', c_int),
+        ('downloadFw', c_int),
         ('dataPath', c_int),
         ('refClkSel', c_int),
         ('dataBusWidth', c_int),
@@ -63,10 +60,9 @@ class S_N5C112GX4_PowerOn(Structure):
     ]
 
 
+MZDAPILib = CDLL("..\Debug\MZD.dll")
 
-
-
-def API_N5C112GX4_GetFirmwareRev(devPtr, major, minor, patch, build):
+def API_N5C112GX4_GetFirmwareRev(devPtr, major_p, minor_p, patch_p, build_p):
     """
     :param devPtr: argument type c_void_p
     :param major: A pointer of c_uint8
@@ -77,11 +73,11 @@ def API_N5C112GX4_GetFirmwareRev(devPtr, major, minor, patch, build):
     func = MZDAPILib["API_N5C112GX4_GetFirmwareRev"]
     func.argtypes = [c_void_p, POINTER(c_uint8), POINTER(c_uint8), POINTER(c_uint8), POINTER(c_uint8)]
     func.restype = c_uint32
-    ret = func(devPtr, major, minor, patch, build)
+    ret = func(devPtr, major_p, minor_p, patch_p, build_p)
     return ret
 
 
-def API_N5C112GX4_GetPLLLock(devPtr, lane, tsLocked, rsLocked):
+def API_N5C112GX4_GetPLLLock(devPtr, lane, tsLocked_p, rsLocked_p):
     """
     :param devPtr: argument type c_void_p
     :param lane: argument type c_uint8
@@ -91,11 +87,11 @@ def API_N5C112GX4_GetPLLLock(devPtr, lane, tsLocked, rsLocked):
     func = MZDAPILib["API_N5C112GX4_GetPLLLock"]
     func.argtypes = [c_void_p, c_uint8, POINTER(c_int), POINTER(c_int)]
     func.restype = c_uint32
-    ret = func(devPtr, lane, tsLocked, rsLocked)
+    ret = func(devPtr, lane, tsLocked_p, rsLocked_p)
     return ret
 
 
-def API_N5C112GX4_GetTxRxReady(devPtr, lane, txReady, rxReady):
+def API_N5C112GX4_GetTxRxReady(devPtr, lane, txReady_p, rxReady_p):
     """
     :param devPtr: argument type c_void_p
     :param lane: argument type c_uint8
@@ -105,11 +101,11 @@ def API_N5C112GX4_GetTxRxReady(devPtr, lane, txReady, rxReady):
     func = MZDAPILib["API_N5C112GX4_GetTxRxReady"]
     func.argtypes = [c_void_p, c_uint8, POINTER(c_int), POINTER(c_int)]
     func.restype = c_uint32
-    ret = func(devPtr, lane, txReady, rxReady)
+    ret = func(devPtr, lane, txReady_p, rxReady_p)
     return ret
 
 
-def API_N5C112GX4_GetCDRLock(devPtr, lane, cdrLocked):
+def API_N5C112GX4_GetCDRLock(devPtr, lane, cdrLocked_p):
     """
     :param devPtr: argument type c_void_p
     :param lane: argument type c_uint8
@@ -118,7 +114,7 @@ def API_N5C112GX4_GetCDRLock(devPtr, lane, cdrLocked):
     func = MZDAPILib["API_N5C112GX4_GetCDRLock"]
     func.argtypes = [c_void_p, c_uint8, POINTER(c_int)]
     func.restype = c_uint32
-    ret = func(devPtr, lane, cdrLocked)
+    ret = func(devPtr, lane, cdrLocked_p)
     return ret
 
 
@@ -148,7 +144,7 @@ def API_N5C112GX4_SetTxEqParam(devPtr, lane, param, paramValue):
     return ret
 
 
-def API_N5C112GX4_GetTxEqParam(devPtr, lane, param, paramValue):
+def API_N5C112GX4_GetTxEqParam(devPtr, lane, param, paramValue_p):
     """
     :param devPtr: argument type c_void_p
     :param lane: argument type c_uint8
@@ -158,7 +154,7 @@ def API_N5C112GX4_GetTxEqParam(devPtr, lane, param, paramValue):
     func = MZDAPILib["API_N5C112GX4_GetTxEqParam"]
     func.argtypes = [c_void_p, c_uint8, c_int, POINTER(c_uint32)]
     func.restype = c_uint32
-    ret = func(devPtr, lane, param, paramValue)
+    ret = func(devPtr, lane, param, paramValue_p)
     return ret
 
 
@@ -176,7 +172,7 @@ def API_N5C112GX4_SetCTLEParam(devPtr, lane, param, paramValue):
     return ret
 
 
-def API_N5C112GX4_GetCTLEParam(devPtr, lane, param, paramValue):
+def API_N5C112GX4_GetCTLEParam(devPtr, lane, param, paramValue_p):
     """
     :param devPtr: argument type c_void_p
     :param lane: argument type c_uint8
@@ -186,11 +182,11 @@ def API_N5C112GX4_GetCTLEParam(devPtr, lane, param, paramValue):
     func = MZDAPILib["API_N5C112GX4_GetCTLEParam"]
     func.argtypes = [c_void_p, c_uint8, c_int, POINTER(c_uint32)]
     func.restype = c_uint32
-    ret = func(devPtr, lane, param, paramValue)
+    ret = func(devPtr, lane, param, paramValue_p)
     return ret
 
 
-def API_N5C112GX4_GetFfeTap(devPtr, lane, path, tap, tapValue):
+def API_N5C112GX4_GetFfeTap(devPtr, lane, path, tap, tapValue_p):
     """
     :param devPtr: argument type c_void_p
     :param lane: argument type c_uint8
@@ -201,7 +197,7 @@ def API_N5C112GX4_GetFfeTap(devPtr, lane, path, tap, tapValue):
     func = MZDAPILib["API_N5C112GX4_GetFfeTap"]
     func.argtypes = [c_void_p, c_uint8, c_int, c_int, POINTER(c_int32)]
     func.restype = c_uint32
-    ret = func(devPtr, lane, path, tap, tapValue)
+    ret = func(devPtr, lane, path, tap, tapValue_p)
     return ret
 
 
@@ -217,7 +213,7 @@ def API_N5C112GX4_SetMcuBroadcast(devPtr, state):
     return ret
 
 
-def API_N5C112GX4_GetMcuBroadcast(devPtr, state):
+def API_N5C112GX4_GetMcuBroadcast(devPtr, state_p):
     """
     :param devPtr: argument type c_void_p
     :param state: A pointer of the enumerate class MCESD_BOOL
@@ -225,7 +221,7 @@ def API_N5C112GX4_GetMcuBroadcast(devPtr, state):
     func = MZDAPILib["API_N5C112GX4_GetMcuBroadcast"]
     func.argtypes = [c_void_p, POINTER(c_int)]
     func.restype = c_uint32
-    ret = func(devPtr, state)
+    ret = func(devPtr, state_p)
     return ret
 
 
@@ -242,7 +238,7 @@ def API_N5C112GX4_SetPowerPLL(devPtr, lane, state):
     return ret
 
 
-def API_N5C112GX4_GetPowerPLL(devPtr, lane, state):
+def API_N5C112GX4_GetPowerPLL(devPtr, lane, state_p):
     """
     :param devPtr: argument type c_void_p
     :param lane: argument type c_uint8
@@ -251,7 +247,7 @@ def API_N5C112GX4_GetPowerPLL(devPtr, lane, state):
     func = MZDAPILib["API_N5C112GX4_GetPowerPLL"]
     func.argtypes = [c_void_p, c_uint8, POINTER(c_int)]
     func.restype = c_uint32
-    ret = func(devPtr, lane, state)
+    ret = func(devPtr, lane, state_p)
     return ret
 
 
@@ -268,7 +264,7 @@ def API_N5C112GX4_SetPowerTx(devPtr, lane, state):
     return ret
 
 
-def API_N5C112GX4_GetPowerTx(devPtr, lane, state):
+def API_N5C112GX4_GetPowerTx(devPtr, lane, state_p):
     """
     :param devPtr: argument type c_void_p
     :param lane: argument type c_uint8
@@ -277,7 +273,7 @@ def API_N5C112GX4_GetPowerTx(devPtr, lane, state):
     func = MZDAPILib["API_N5C112GX4_GetPowerTx"]
     func.argtypes = [c_void_p, c_uint8, POINTER(c_int)]
     func.restype = c_uint32
-    ret = func(devPtr, lane, state)
+    ret = func(devPtr, lane, state_p)
     return ret
 
 
@@ -294,7 +290,7 @@ def API_N5C112GX4_SetPowerRx(devPtr, lane, state):
     return ret
 
 
-def API_N5C112GX4_GetPowerRx(devPtr, lane, state):
+def API_N5C112GX4_GetPowerRx(devPtr, lane, state_p):
     """
     :param devPtr: argument type c_void_p
     :param lane: argument type c_uint8
@@ -303,7 +299,7 @@ def API_N5C112GX4_GetPowerRx(devPtr, lane, state):
     func = MZDAPILib["API_N5C112GX4_GetPowerRx"]
     func.argtypes = [c_void_p, c_uint8, POINTER(c_int)]
     func.restype = c_uint32
-    ret = func(devPtr, lane, state)
+    ret = func(devPtr, lane, state_p)
     return ret
 
 
@@ -319,7 +315,7 @@ def API_N5C112GX4_SetPhyMode(devPtr, mode):
     return ret
 
 
-def API_N5C112GX4_GetPhyMode(devPtr, mode):
+def API_N5C112GX4_GetPhyMode(devPtr, mode_p):
     """
     :param devPtr: argument type c_void_p
     :param mode: A pointer of the enumerate class E_N5C112GX4_PHYMODE
@@ -327,7 +323,7 @@ def API_N5C112GX4_GetPhyMode(devPtr, mode):
     func = MZDAPILib["API_N5C112GX4_GetPhyMode"]
     func.argtypes = [c_void_p, POINTER(c_int)]
     func.restype = c_uint32
-    ret = func(devPtr, mode)
+    ret = func(devPtr, mode_p)
     return ret
 
 
@@ -345,7 +341,7 @@ def API_N5C112GX4_SetRefFreq(devPtr, lane, freq, clkSel):
     return ret
 
 
-def API_N5C112GX4_GetRefFreq(devPtr, lane, refFreq, refClkSel):
+def API_N5C112GX4_GetRefFreq(devPtr, lane, refFreq_p, refClkSel_p):
     """
     :param devPtr: argument type c_void_p
     :param lane: argument type c_uint8
@@ -355,7 +351,7 @@ def API_N5C112GX4_GetRefFreq(devPtr, lane, refFreq, refClkSel):
     func = MZDAPILib["API_N5C112GX4_GetRefFreq"]
     func.argtypes = [c_void_p, c_uint8, POINTER(c_int), POINTER(c_int)]
     func.restype = c_uint32
-    ret = func(devPtr, lane, refFreq, refClkSel)
+    ret = func(devPtr, lane, refFreq_p, refClkSel_p)
     return ret
 
 
@@ -372,7 +368,7 @@ def API_N5C112GX4_SetTxRxBitRate(devPtr, lane, speed):
     return ret
 
 
-def API_N5C112GX4_GetTxRxBitRate(devPtr, lane, speed):
+def API_N5C112GX4_GetTxRxBitRate(devPtr, lane, speed_p):
     """
     :param devPtr: argument type c_void_p
     :param lane: argument type c_uint8
@@ -381,7 +377,7 @@ def API_N5C112GX4_GetTxRxBitRate(devPtr, lane, speed):
     func = MZDAPILib["API_N5C112GX4_GetTxRxBitRate"]
     func.argtypes = [c_void_p, c_uint8, POINTER(c_int)]
     func.restype = c_uint32
-    ret = func(devPtr, lane, speed)
+    ret = func(devPtr, lane, speed_p)
     return ret
 
 
@@ -399,7 +395,7 @@ def API_N5C112GX4_SetDataBusWidth(devPtr, lane, txWidth, rxWidth):
     return ret
 
 
-def API_N5C112GX4_GetDataBusWidth(devPtr, lane, txWidth, rxWidth):
+def API_N5C112GX4_GetDataBusWidth(devPtr, lane, txWidth_p, rxWidth_p):
     """
     :param devPtr: argument type c_void_p
     :param lane: argument type c_uint8
@@ -409,7 +405,7 @@ def API_N5C112GX4_GetDataBusWidth(devPtr, lane, txWidth, rxWidth):
     func = MZDAPILib["API_N5C112GX4_GetDataBusWidth"]
     func.argtypes = [c_void_p, c_uint8, POINTER(c_int), POINTER(c_int)]
     func.restype = c_uint32
-    ret = func(devPtr, lane, txWidth, rxWidth)
+    ret = func(devPtr, lane, txWidth_p, rxWidth_p)
     return ret
 
 
@@ -425,7 +421,7 @@ def API_N5C112GX4_SetMcuClockFreq(devPtr, clockMHz):
     return ret
 
 
-def API_N5C112GX4_GetMcuClockFreq(devPtr, clockMHz):
+def API_N5C112GX4_GetMcuClockFreq(devPtr, clockMHz_p):
     """
     :param devPtr: argument type c_void_p
     :param clockMHz: A pointer of c_uint16
@@ -433,7 +429,7 @@ def API_N5C112GX4_GetMcuClockFreq(devPtr, clockMHz):
     func = MZDAPILib["API_N5C112GX4_GetMcuClockFreq"]
     func.argtypes = [c_void_p, POINTER(c_uint16)]
     func.restype = c_uint32
-    ret = func(devPtr, clockMHz)
+    ret = func(devPtr, clockMHz_p)
     return ret
 
 
@@ -450,7 +446,7 @@ def API_N5C112GX4_SetTxOutputEnable(devPtr, lane, state):
     return ret
 
 
-def API_N5C112GX4_GetTxOutputEnable(devPtr, lane, state):
+def API_N5C112GX4_GetTxOutputEnable(devPtr, lane, state_p):
     """
     :param devPtr: argument type c_void_p
     :param lane: argument type c_uint8
@@ -459,7 +455,7 @@ def API_N5C112GX4_GetTxOutputEnable(devPtr, lane, state):
     func = MZDAPILib["API_N5C112GX4_GetTxOutputEnable"]
     func.argtypes = [c_void_p, c_uint8, POINTER(c_int)]
     func.restype = c_uint32
-    ret = func(devPtr, lane, state)
+    ret = func(devPtr, lane, state_p)
     return ret
 
 
@@ -475,7 +471,7 @@ def API_N5C112GX4_SetPowerIvRef(devPtr, state):
     return ret
 
 
-def API_N5C112GX4_GetPowerIvRef(devPtr, state):
+def API_N5C112GX4_GetPowerIvRef(devPtr, state_p):
     """
     :param devPtr: argument type c_void_p
     :param state: A pointer of the enumerate class MCESD_BOOL
@@ -483,7 +479,7 @@ def API_N5C112GX4_GetPowerIvRef(devPtr, state):
     func = MZDAPILib["API_N5C112GX4_GetPowerIvRef"]
     func.argtypes = [c_void_p, POINTER(c_int)]
     func.restype = c_uint32
-    ret = func(devPtr, state)
+    ret = func(devPtr, state_p)
     return ret
 
 
@@ -501,7 +497,7 @@ def API_N5C112GX4_SetCDRParam(devPtr, lane, param, paramValue):
     return ret
 
 
-def API_N5C112GX4_GetCDRParam(devPtr, lane, param, paramValue):
+def API_N5C112GX4_GetCDRParam(devPtr, lane, param, paramValue_p):
     """
     :param devPtr: argument type c_void_p
     :param lane: argument type c_uint8
@@ -511,11 +507,11 @@ def API_N5C112GX4_GetCDRParam(devPtr, lane, param, paramValue):
     func = MZDAPILib["API_N5C112GX4_GetCDRParam"]
     func.argtypes = [c_void_p, c_uint8, c_int, POINTER(c_uint32)]
     func.restype = c_uint32
-    ret = func(devPtr, lane, param, paramValue)
+    ret = func(devPtr, lane, param, paramValue_p)
     return ret
 
 
-def API_N5C112GX4_SetTrainingTimeout(devPtr, lane, type, training):
+def API_N5C112GX4_SetTrainingTimeout(devPtr, lane, type, training_p):
     """
     :param devPtr: argument type c_void_p
     :param lane: argument type c_uint8
@@ -525,11 +521,11 @@ def API_N5C112GX4_SetTrainingTimeout(devPtr, lane, type, training):
     func = MZDAPILib["API_N5C112GX4_SetTrainingTimeout"]
     func.argtypes = [c_void_p, c_uint8, c_int, POINTER(S_N5C112GX4_TRAINING_TIMEOUT)]
     func.restype = c_uint32
-    ret = func(devPtr, lane, type, training)
+    ret = func(devPtr, lane, type, training_p)
     return ret
 
 
-def API_N5C112GX4_GetTrainingTimeout(devPtr, lane, type, training):
+def API_N5C112GX4_GetTrainingTimeout(devPtr, lane, type, training_p):
     """
     :param devPtr: argument type c_void_p
     :param lane: argument type c_uint8
@@ -539,11 +535,11 @@ def API_N5C112GX4_GetTrainingTimeout(devPtr, lane, type, training):
     func = MZDAPILib["API_N5C112GX4_GetTrainingTimeout"]
     func.argtypes = [c_void_p, c_uint8, c_int, POINTER(S_N5C112GX4_TRAINING_TIMEOUT)]
     func.restype = c_uint32
-    ret = func(devPtr, lane, type, training)
+    ret = func(devPtr, lane, type, training_p)
     return ret
 
 
-def API_N5C112GX4_GetSquelchDetect(devPtr, lane, squelched):
+def API_N5C112GX4_GetSquelchDetect(devPtr, lane, squelched_p):
     """
     :param devPtr: argument type c_void_p
     :param lane: argument type c_uint8
@@ -552,7 +548,7 @@ def API_N5C112GX4_GetSquelchDetect(devPtr, lane, squelched):
     func = MZDAPILib["API_N5C112GX4_GetSquelchDetect"]
     func.argtypes = [c_void_p, c_uint8, POINTER(c_int)]
     func.restype = c_uint32
-    ret = func(devPtr, lane, squelched)
+    ret = func(devPtr, lane, squelched_p)
     return ret
 
 
@@ -569,7 +565,7 @@ def API_N5C112GX4_SetSquelchThreshold(devPtr, lane, threshold):
     return ret
 
 
-def API_N5C112GX4_GetSquelchThreshold(devPtr, lane, threshold):
+def API_N5C112GX4_GetSquelchThreshold(devPtr, lane, threshold_p):
     """
     :param devPtr: argument type c_void_p
     :param lane: argument type c_uint8
@@ -578,7 +574,7 @@ def API_N5C112GX4_GetSquelchThreshold(devPtr, lane, threshold):
     func = MZDAPILib["API_N5C112GX4_GetSquelchThreshold"]
     func.argtypes = [c_void_p, c_uint8, POINTER(c_uint8)]
     func.restype = c_uint32
-    ret = func(devPtr, lane, threshold)
+    ret = func(devPtr, lane, threshold_p)
     return ret
 
 
@@ -595,7 +591,7 @@ def API_N5C112GX4_SetDataPath(devPtr, lane, path):
     return ret
 
 
-def API_N5C112GX4_GetDataPath(devPtr, lane, path):
+def API_N5C112GX4_GetDataPath(devPtr, lane, path_p):
     """
     :param devPtr: argument type c_void_p
     :param lane: argument type c_uint8
@@ -604,11 +600,11 @@ def API_N5C112GX4_GetDataPath(devPtr, lane, path):
     func = MZDAPILib["API_N5C112GX4_GetDataPath"]
     func.argtypes = [c_void_p, c_uint8, POINTER(c_int)]
     func.restype = c_uint32
-    ret = func(devPtr, lane, path)
+    ret = func(devPtr, lane, path_p)
     return ret
 
 
-def API_N5C112GX4_GetTemperature(devPtr, temperature):
+def API_N5C112GX4_GetTemperature(devPtr, temperature_p):
     """
     :param devPtr: argument type c_void_p
     :param temperature: A pointer of c_int32
@@ -616,7 +612,7 @@ def API_N5C112GX4_GetTemperature(devPtr, temperature):
     func = MZDAPILib["API_N5C112GX4_GetTemperature"]
     func.argtypes = [c_void_p, POINTER(c_int32)]
     func.restype = c_uint32
-    ret = func(devPtr, temperature)
+    ret = func(devPtr, temperature_p)
     return ret
 
 
@@ -634,7 +630,7 @@ def API_N5C112GX4_SetTxRxPolarity(devPtr, lane, txPolarity, rxPolarity):
     return ret
 
 
-def API_N5C112GX4_GetTxRxPolarity(devPtr, lane, txPolarity, rxPolarity):
+def API_N5C112GX4_GetTxRxPolarity(devPtr, lane, txPolarity_p, rxPolarity_p):
     """
     :param devPtr: argument type c_void_p
     :param lane: argument type c_uint8
@@ -644,7 +640,7 @@ def API_N5C112GX4_GetTxRxPolarity(devPtr, lane, txPolarity, rxPolarity):
     func = MZDAPILib["API_N5C112GX4_GetTxRxPolarity"]
     func.argtypes = [c_void_p, c_uint8, POINTER(c_int), POINTER(c_int)]
     func.restype = c_uint32
-    ret = func(devPtr, lane, txPolarity, rxPolarity)
+    ret = func(devPtr, lane, txPolarity_p, rxPolarity_p)
     return ret
 
 
@@ -661,7 +657,7 @@ def API_N5C112GX4_TxInjectError(devPtr, lane, errors):
     return ret
 
 
-def API_N5C112GX4_SetTxRxPattern(devPtr, lane, txPattern, rxPattern, txUserPattern, rxUserPattern):
+def API_N5C112GX4_SetTxRxPattern(devPtr, lane, txPattern, rxPattern, txUserPattern_p, rxUserPattern_p):
     """
     :param devPtr: argument type c_void_p
     :param lane: argument type c_uint8
@@ -673,11 +669,11 @@ def API_N5C112GX4_SetTxRxPattern(devPtr, lane, txPattern, rxPattern, txUserPatte
     func = MZDAPILib["API_N5C112GX4_SetTxRxPattern"]
     func.argtypes = [c_void_p, c_uint8, c_int, c_int, POINTER(c_char), POINTER(c_char)]
     func.restype = c_uint32
-    ret = func(devPtr, lane, txPattern, rxPattern, txUserPattern, rxUserPattern)
+    ret = func(devPtr, lane, txPattern, rxPattern, txUserPattern_p, rxUserPattern_p)
     return ret
 
 
-def API_N5C112GX4_GetTxRxPattern(devPtr, lane, txPattern, rxPattern, txUserPattern, rxUserPattern):
+def API_N5C112GX4_GetTxRxPattern(devPtr, lane, txPattern_p, rxPattern_p, txUserPattern_p, rxUserPattern_p):
     """
     :param devPtr: argument type c_void_p
     :param lane: argument type c_uint8
@@ -689,7 +685,7 @@ def API_N5C112GX4_GetTxRxPattern(devPtr, lane, txPattern, rxPattern, txUserPatte
     func = MZDAPILib["API_N5C112GX4_GetTxRxPattern"]
     func.argtypes = [c_void_p, c_uint8, POINTER(c_int), POINTER(c_int), POINTER(c_char), POINTER(c_char)]
     func.restype = c_uint32
-    ret = func(devPtr, lane, txPattern, rxPattern, txUserPattern, rxUserPattern)
+    ret = func(devPtr, lane, txPattern_p, rxPattern_p, txUserPattern_p, rxUserPattern_p)
     return ret
 
 
@@ -707,7 +703,7 @@ def API_N5C112GX4_SetMSBLSBSwap(devPtr, lane, txSwapMsbLsb, rxSwapMsbLsb):
     return ret
 
 
-def API_N5C112GX4_GetMSBLSBSwap(devPtr, lane, txSwapMsbLsb, rxSwapMsbLsb):
+def API_N5C112GX4_GetMSBLSBSwap(devPtr, lane, txSwapMsbLsb_p, rxSwapMsbLsb_p):
     """
     :param devPtr: argument type c_void_p
     :param lane: argument type c_uint8
@@ -717,7 +713,7 @@ def API_N5C112GX4_GetMSBLSBSwap(devPtr, lane, txSwapMsbLsb, rxSwapMsbLsb):
     func = MZDAPILib["API_N5C112GX4_GetMSBLSBSwap"]
     func.argtypes = [c_void_p, c_uint8, POINTER(c_int), POINTER(c_int)]
     func.restype = c_uint32
-    ret = func(devPtr, lane, txSwapMsbLsb, rxSwapMsbLsb)
+    ret = func(devPtr, lane, txSwapMsbLsb_p, rxSwapMsbLsb_p)
     return ret
 
 
@@ -735,7 +731,7 @@ def API_N5C112GX4_SetGrayCode(devPtr, lane, txGrayCode, rxGrayCode):
     return ret
 
 
-def API_N5C112GX4_GetGrayCode(devPtr, lane, txGrayCode, rxGrayCode):
+def API_N5C112GX4_GetGrayCode(devPtr, lane, txGrayCode_p, rxGrayCode_p):
     """
     :param devPtr: argument type c_void_p
     :param lane: argument type c_uint8
@@ -745,11 +741,11 @@ def API_N5C112GX4_GetGrayCode(devPtr, lane, txGrayCode, rxGrayCode):
     func = MZDAPILib["API_N5C112GX4_GetGrayCode"]
     func.argtypes = [c_void_p, c_uint8, POINTER(c_int), POINTER(c_int)]
     func.restype = c_uint32
-    ret = func(devPtr, lane, txGrayCode, rxGrayCode)
+    ret = func(devPtr, lane, txGrayCode_p, rxGrayCode_p)
     return ret
 
 
-def API_N5C112GX4_GetDataAcquisitionRate(devPtr, lane, acqRate):
+def API_N5C112GX4_GetDataAcquisitionRate(devPtr, lane, acqRate_p):
     """
     :param devPtr: argument type c_void_p
     :param lane: argument type c_uint8
@@ -758,7 +754,7 @@ def API_N5C112GX4_GetDataAcquisitionRate(devPtr, lane, acqRate):
     func = MZDAPILib["API_N5C112GX4_GetDataAcquisitionRate"]
     func.argtypes = [c_void_p, c_uint8, POINTER(c_int)]
     func.restype = c_uint32
-    ret = func(devPtr, lane, acqRate)
+    ret = func(devPtr, lane, acqRate_p)
     return ret
 
 
@@ -788,7 +784,7 @@ def API_N5C112GX4_StartTraining(devPtr, lane, type):
     return ret
 
 
-def API_N5C112GX4_CheckTraining(devPtr, lane, type, completed, failed):
+def API_N5C112GX4_CheckTraining(devPtr, lane, type, completed_p, failed_p):
     """
     :param devPtr: argument type c_void_p
     :param lane: argument type c_uint8
@@ -799,7 +795,7 @@ def API_N5C112GX4_CheckTraining(devPtr, lane, type, completed, failed):
     func = MZDAPILib["API_N5C112GX4_CheckTraining"]
     func.argtypes = [c_void_p, c_uint8, c_int, POINTER(c_int), POINTER(c_int)]
     func.restype = c_uint32
-    ret = func(devPtr, lane, type, completed, failed)
+    ret = func(devPtr, lane, type, completed_p, failed_p)
     return ret
 
 
@@ -816,7 +812,7 @@ def API_N5C112GX4_StopTraining(devPtr, lane, type):
     return ret
 
 
-def API_N5C112GX4_GetComparatorStats(devPtr, lane, statistics):
+def API_N5C112GX4_GetComparatorStats(devPtr, lane, statistics_p):
     """
     :param devPtr: argument type c_void_p
     :param lane: argument type c_uint8
@@ -825,7 +821,7 @@ def API_N5C112GX4_GetComparatorStats(devPtr, lane, statistics):
     func = MZDAPILib["API_N5C112GX4_GetComparatorStats"]
     func.argtypes = [c_void_p, c_uint8, POINTER(S_N5C112GX4_PATTERN_STATISTICS)]
     func.restype = c_uint32
-    ret = func(devPtr, lane, statistics)
+    ret = func(devPtr, lane, statistics_p)
     return ret
 
 
@@ -889,7 +885,7 @@ def API_N5C112GX4_EOMFinalize(devPtr, lane):
     return ret
 
 
-def API_N5C112GX4_EOMMeasPoint(devPtr, lane, eyeTMB, phase, voltage, measurement):
+def API_N5C112GX4_EOMMeasPoint(devPtr, lane, eyeTMB, phase, voltage, measurement_p):
     """
     :param devPtr: argument type c_void_p
     :param lane: argument type c_uint8
@@ -901,11 +897,11 @@ def API_N5C112GX4_EOMMeasPoint(devPtr, lane, eyeTMB, phase, voltage, measurement
     func = MZDAPILib["API_N5C112GX4_EOMMeasPoint"]
     func.argtypes = [c_void_p, c_uint8, c_int, c_int32, c_uint8, POINTER(S_N5C112GX4_EOM_DATA)]
     func.restype = c_uint32
-    ret = func(devPtr, lane, eyeTMB, phase, voltage, measurement)
+    ret = func(devPtr, lane, eyeTMB, phase, voltage, measurement_p)
     return ret
 
 
-def API_N5C112GX4_EOM1UIStepCount(devPtr, lane, phaseStepCount, voltageStepCount):
+def API_N5C112GX4_EOM1UIStepCount(devPtr, lane, phaseStepCount_p, voltageStepCount_p):
     """
     :param devPtr: argument type c_void_p
     :param lane: argument type c_uint8
@@ -915,11 +911,11 @@ def API_N5C112GX4_EOM1UIStepCount(devPtr, lane, phaseStepCount, voltageStepCount
     func = MZDAPILib["API_N5C112GX4_EOM1UIStepCount"]
     func.argtypes = [c_void_p, c_uint8, POINTER(c_uint16), POINTER(c_uint16)]
     func.restype = c_uint32
-    ret = func(devPtr, lane, phaseStepCount, voltageStepCount)
+    ret = func(devPtr, lane, phaseStepCount_p, voltageStepCount_p)
     return ret
 
 
-def API_N5C112GX4_EOMGetWidthHeight(devPtr, lane, eyeTMB, width, height):
+def API_N5C112GX4_EOMGetWidthHeight(devPtr, lane, eyeTMB, width_p, height_p):
     """
     :param devPtr: argument type c_void_p
     :param lane: argument type c_uint8
@@ -930,7 +926,7 @@ def API_N5C112GX4_EOMGetWidthHeight(devPtr, lane, eyeTMB, width, height):
     func = MZDAPILib["API_N5C112GX4_EOMGetWidthHeight"]
     func.argtypes = [c_void_p, c_uint8, c_int, POINTER(c_uint16), POINTER(c_uint16)]
     func.restype = c_uint32
-    ret = func(devPtr, lane, eyeTMB, width, height)
+    ret = func(devPtr, lane, eyeTMB, width_p, height_p)
     return ret
 
 
@@ -946,7 +942,7 @@ def API_N5C112GX4_ExecuteCDS(devPtr, lane):
     return ret
 
 
-def API_N5C112GX4_GetSNR(devPtr, lane, snr):
+def API_N5C112GX4_GetSNR(devPtr, lane, snr_p):
     """
     :param devPtr: argument type c_void_p
     :param lane: argument type c_uint8
@@ -955,7 +951,7 @@ def API_N5C112GX4_GetSNR(devPtr, lane, snr):
     func = MZDAPILib["API_N5C112GX4_GetSNR"]
     func.argtypes = [c_void_p, c_uint8, POINTER(c_uint32)]
     func.restype = c_uint32
-    ret = func(devPtr, lane, snr)
+    ret = func(devPtr, lane, snr_p)
     return ret
 
 
@@ -983,7 +979,7 @@ def API_N5C112GX4_PowerOffLane(devPtr, lane):
     return ret
 
 
-def API_N5C112GX4_DownloadFirmware(devPtr, fwCodePtr, fwCodeSizeDW, errCode):
+def API_N5C112GX4_DownloadFirmware(devPtr, fwCodePtr_p, fwCodeSizeDW, errCode_p):
     """
     :param devPtr: argument type c_void_p
     :param fwCodePtr: A pointer of c_uint32
@@ -993,11 +989,11 @@ def API_N5C112GX4_DownloadFirmware(devPtr, fwCodePtr, fwCodeSizeDW, errCode):
     func = MZDAPILib["API_N5C112GX4_DownloadFirmware"]
     func.argtypes = [c_void_p, POINTER(c_uint32), c_uint32, POINTER(c_uint16)]
     func.restype = c_uint32
-    ret = func(devPtr, fwCodePtr, fwCodeSizeDW, errCode)
+    ret = func(devPtr, fwCodePtr_p, fwCodeSizeDW, errCode_p)
     return ret
 
 
-def API_N5C112GX4_UpdateRamCode(devPtr, lane, code, codeSize, memSize, address, errCode):
+def API_N5C112GX4_UpdateRamCode(devPtr, lane, code_p, codeSize, memSize, address, errCode_p):
     """
     :param devPtr: argument type c_void_p
     :param lane: argument type c_uint8
@@ -1010,7 +1006,7 @@ def API_N5C112GX4_UpdateRamCode(devPtr, lane, code, codeSize, memSize, address, 
     func = MZDAPILib["API_N5C112GX4_UpdateRamCode"]
     func.argtypes = [c_void_p, c_uint8, POINTER(c_uint32), c_uint32, c_uint32, c_uint32, POINTER(c_uint16)]
     func.restype = c_uint32
-    ret = func(devPtr, lane, code, codeSize, memSize, address, errCode)
+    ret = func(devPtr, lane, code_p, codeSize, memSize, address, errCode_p)
     return ret
 
 
@@ -1027,7 +1023,7 @@ def API_N5C112GX4_HwWriteReg(devPtr, reg, value):
     return ret
 
 
-def API_N5C112GX4_HwReadReg(devPtr, reg, data):
+def API_N5C112GX4_HwReadReg(devPtr, reg, data_p):
     """
     :param devPtr: argument type c_void_p
     :param reg: argument type c_uint32
@@ -1036,7 +1032,7 @@ def API_N5C112GX4_HwReadReg(devPtr, reg, data):
     func = MZDAPILib["API_N5C112GX4_HwReadReg"]
     func.argtypes = [c_void_p, c_uint32, POINTER(c_uint32)]
     func.restype = c_uint32
-    ret = func(devPtr, reg, data)
+    ret = func(devPtr, reg, data_p)
     return ret
 
 
@@ -1053,7 +1049,7 @@ def API_N5C112GX4_HwSetPinCfg(devPtr, pin, pinValue):
     return ret
 
 
-def API_N5C112GX4_HwGetPinCfg(devPtr, pin, pinValue):
+def API_N5C112GX4_HwGetPinCfg(devPtr, pin, pinValue_p):
     """
     :param devPtr: argument type c_void_p
     :param pin: member from enumerate class E_N5C112GX4_PIN
@@ -1062,7 +1058,7 @@ def API_N5C112GX4_HwGetPinCfg(devPtr, pin, pinValue):
     func = MZDAPILib["API_N5C112GX4_HwGetPinCfg"]
     func.argtypes = [c_void_p, c_int, POINTER(c_uint16)]
     func.restype = c_uint32
-    ret = func(devPtr, pin, pinValue)
+    ret = func(devPtr, pin, pinValue_p)
     return ret
 
 
@@ -1092,7 +1088,7 @@ def API_N5C112GX4_WriteReg(devPtr, lane, reg, value):
     return ret
 
 
-def API_N5C112GX4_ReadReg(devPtr, lane, reg, data):
+def API_N5C112GX4_ReadReg(devPtr, lane, reg, data_p):
     """
     :param devPtr: argument type c_void_p
     :param lane: argument type c_uint8
@@ -1102,50 +1098,50 @@ def API_N5C112GX4_ReadReg(devPtr, lane, reg, data):
     func = MZDAPILib["API_N5C112GX4_ReadReg"]
     func.argtypes = [c_void_p, c_uint8, c_uint32, POINTER(c_uint32)]
     func.restype = c_uint32
-    ret = func(devPtr, lane, reg, data)
+    ret = func(devPtr, lane, reg, data_p)
     return ret
 
 
-def API_N5C112GX4_WriteField(devPtr, lane, fieldPtr, value):
+def API_N5C112GX4_WriteField(devPtr, lane, fieldPtr_p, value):
     """
     :param devPtr: argument type c_void_p
     :param lane: argument type c_uint8
-    :param fieldPtr: implementation of the structure class MCESD_FIELD
-    :param value: A pointer of c_uint32
+    :param fieldPtr: A pointer of the structure class MCESD_FIELD
+    :param value: argument type c_uint32
     """
     func = MZDAPILib["API_N5C112GX4_WriteField"]
-    func.argtypes = [c_void_p, c_uint8, MCESD_FIELD, POINTER(c_uint32)]
+    func.argtypes = [c_void_p, c_uint8, POINTER(MCESD_FIELD), c_uint32]
     func.restype = c_uint32
-    ret = func(devPtr, lane, fieldPtr, value)
+    ret = func(devPtr, lane, fieldPtr_p, value)
     return ret
 
 
-def API_N5C112GX4_ReadField(devPtr, lane, fieldPtr, data):
+def API_N5C112GX4_ReadField(devPtr, lane, fieldPtr_p, data_p):
     """
     :param devPtr: argument type c_void_p
     :param lane: argument type c_uint8
-    :param fieldPtr: implementation of the structure class MCESD_FIELD
+    :param fieldPtr: A pointer of the structure class MCESD_FIELD
     :param data: A pointer of c_uint32
     """
     func = MZDAPILib["API_N5C112GX4_ReadField"]
-    func.argtypes = [c_void_p, c_uint8, MCESD_FIELD, POINTER(c_uint32)]
+    func.argtypes = [c_void_p, c_uint8, POINTER(MCESD_FIELD), POINTER(c_uint32)]
     func.restype = c_uint32
-    ret = func(devPtr, lane, fieldPtr, data)
+    ret = func(devPtr, lane, fieldPtr_p, data_p)
     return ret
 
 
-def API_N5C112GX4_PollField(devPtr, lane, fieldPtr, value, timeout_ms):
+def API_N5C112GX4_PollField(devPtr, lane, fieldPtr_p, value, timeout_ms):
     """
     :param devPtr: argument type c_void_p
     :param lane: argument type c_uint8
-    :param fieldPtr: implementation of the structure class MCESD_FIELD
-    :param value: A pointer of c_uint32
+    :param fieldPtr: A pointer of the structure class MCESD_FIELD
+    :param value: argument type c_uint32
     :param timeout_ms: argument type c_uint32
     """
     func = MZDAPILib["API_N5C112GX4_PollField"]
-    func.argtypes = [c_void_p, c_uint8, MCESD_FIELD, POINTER(c_uint32), c_uint32]
+    func.argtypes = [c_void_p, c_uint8, POINTER(MCESD_FIELD), c_uint32, c_uint32]
     func.restype = c_uint32
-    ret = func(devPtr, lane, fieldPtr, value, timeout_ms)
+    ret = func(devPtr, lane, fieldPtr_p, value, timeout_ms)
     return ret
 
 

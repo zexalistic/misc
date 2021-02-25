@@ -1138,10 +1138,10 @@ if __name__ == '__main__':
     devPtr = apiWrapper.pSerdesDev
     lane = 1
     fieldPtr = MCESD_FIELD(0, 0, 0, 0, 0, 0)
+    fieldPtr_p = byref(fieldPtr)
     value = 1
-    value_p = c_uint32(value)
     try:
-        API_N5C112GX4_WriteField(devPtr, lane, fieldPtr, value_p)
+        API_N5C112GX4_WriteField(devPtr, lane, fieldPtr_p, value)
     except Exception:
         traceback.print_exc()
     logging.debug(f"lane = {lane}")
@@ -1153,10 +1153,11 @@ if __name__ == '__main__':
     devPtr = apiWrapper.pSerdesDev
     lane = 1
     fieldPtr = MCESD_FIELD(0, 0, 0, 0, 0, 0)
+    fieldPtr_p = byref(fieldPtr)
     data = 1
     data_p = c_uint32(data)
     try:
-        API_N5C112GX4_ReadField(devPtr, lane, fieldPtr, data_p)
+        API_N5C112GX4_ReadField(devPtr, lane, fieldPtr_p, data_p)
     except Exception:
         traceback.print_exc()
     logging.debug(f"lane = {lane}")
@@ -1168,11 +1169,11 @@ if __name__ == '__main__':
     devPtr = apiWrapper.pSerdesDev
     lane = 1
     fieldPtr = MCESD_FIELD(0, 0, 0, 0, 0, 0)
+    fieldPtr_p = byref(fieldPtr)
     value = 1
-    value_p = c_uint32(value)
     timeout_ms = 1
     try:
-        API_N5C112GX4_PollField(devPtr, lane, fieldPtr, value_p, timeout_ms)
+        API_N5C112GX4_PollField(devPtr, lane, fieldPtr_p, value, timeout_ms)
     except Exception:
         traceback.print_exc()
     logging.debug(f"lane = {lane}")

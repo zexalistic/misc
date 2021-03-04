@@ -1,6 +1,248 @@
 from enum import Enum, unique
 
 @unique
+class MZD_BOOL(Enum):
+    MZD_FALSE = 0
+    MZD_TRUE = 1
+
+
+@unique
+class MZD_INTERFACE(Enum):
+    MZD_HOST_MODE_IDX = 0
+    MZD_LINE_MODE_IDX = 1
+    MZD_NUM_INTERFACE = 2
+
+
+@unique
+class MZD_DEVICE_ID(Enum):
+    MZD_DEV_X7121M = 0
+    MZD_DEV_X6142M = 1
+    MZD_DEV_X7121P = 4
+    MZD_DEV_X6142P = 5
+    MZD_DEV_X5243P = 7
+    MZD_DEV_X9121M = 8
+    MZD_DEV_X8181M = 9
+    MZD_DEV_X9121P = 12
+    MZD_DEV_X8181P = 13
+    MZD_DEV_X93160 = 14
+    MZD_DEV_UNKNOWN = 255
+
+
+@unique
+class MZD_DEV_OPERATIONS(Enum):
+    MZD_DEV_OP_DEVICE = 0
+    MZD_DEV_OP_LINE_LANE_COUNT = 1
+    MZD_DEV_OP_HOST_LANE_COUNT = 2
+    MZD_DEV_OP_MACSEC = 3
+    MZD_DEV_OP_CL_SEC_TAG = 4
+    MZD_DEV_OP_HMUX = 5
+    MZD_DEV_OP_PTP = 6
+    MZD_DEV_OP_SERDES_MUX = 7
+    MZD_DEV_OP_FLASH_LOAD = 8
+    MZD_DEV_OP_MODES = 9
+    MZD_DEV_OP_COUNT = 10
+
+
+@unique
+class MZD_DEVICE_REV(Enum):
+    MZD_REV_A0 = 0
+    MZD_REV_UNKNOWN = 255
+
+
+@unique
+class MZD_OP_MODE(Enum):
+    MZD_OP_MODE_UNKNOWN = 0
+    MZD_P100LN = 1
+    MZD_P100LR = 2
+    MZD_P100CR = 3
+    MZD_P100KR = 4
+    MZD_P100KN = 5
+    MZD_P100KL = 6
+    MZD_P100UP4 = 7
+    MZD_P100QP4 = 8
+    MZD_P100UP2 = 9
+    MZD_P100QP2 = 10
+    MZD_P100UP1 = 11
+    MZD_P100QP1 = 12
+    MZD_P400UP8 = 13
+    MZD_P400QP8 = 14
+    MZD_P400UP4 = 15
+    MZD_P400QP4 = 16
+    MZD_P800UP8 = 17
+    MZD_P800QP8 = 18
+    MZD_P800UP8C = 19
+    MZD_P800QP8C = 20
+    MZD_R100L4 = 21
+    MZD_R100C4 = 22
+    MZD_R100G4 = 23
+    MZD_R100H4 = 24
+    MZD_R100U2 = 25
+    MZD_R100Q2 = 26
+    MZD_R100U = 27
+    MZD_R100Q = 28
+    MZD_R400U8 = 29
+    MZD_R400Q8 = 30
+    MZD_R400U4 = 31
+    MZD_R400Q4 = 32
+    MZD_R800U8 = 33
+    MZD_R800Q8 = 34
+    MZD_OP_MODE_COUNT = 35
+
+
+@unique
+class MZD_OP_TABLE(Enum):
+    MZD_OP_TABLE_OP_MODE = 0
+    MZD_OP_TABLE_SIGNAL = 1
+    MZD_OP_TABLE_LANE_COUNT = 2
+    MZD_OP_TABLE_FEC = 3
+    MZD_OP_TABLE_MODE_TYPE = 4
+    MZD_OP_TABLE_AN_TRAIN = 5
+    MZD_OP_TABLE_SPEED = 6
+    MZD_OP_TABLE_REG = 7
+    MZD_OP_TABLE_COUNT = 8
+
+
+@unique
+class MZD_SPEED(Enum):
+    MZD_1GB = 0
+    MZD_2P5GB = 1
+    MZD_5GB = 2
+    MZD_10GB = 3
+    MZD_25GB = 4
+    MZD_40GB = 5
+    MZD_50GB = 6
+    MZD_100GB = 7
+    MZD_200GB = 8
+    MZD_400GB = 9
+    MZD_800GB = 10
+    MZD_SPEED_UNKNOWN = 11
+
+
+@unique
+class MZD_RESET_TYPE(Enum):
+    MZD_SOFT_RESET = 1
+    MZD_HARD_RESET = 2
+
+
+@unique
+class MZD_FIRMWARE_STATUS(Enum):
+    MZD_FIRMWARE_STATUS_UNKNOWN = 0
+    MZD_NO_FIRMWARE_LOADED = 1
+    MZD_LOAD_IN_PROGRESS = 2
+    MZD_LOAD_FAILED = 3
+    MZD_LOAD_SUCCESS = 4
+
+
+@unique
+class MZD_PCS_MODE_LOOPBACK(Enum):
+    MZD_PCS_SHALLOW_LOOPBACK = 1
+    MZD_PCS_DEEP_LOOPBACK = 2
+    MZD_PMA_DEEP_LOOPBACK = 3
+
+
+@unique
+class MZD_PKT_COUNT_TYPE(Enum):
+    MZD_PKT_GET_TX = 0
+    MZD_PKT_GET_RX = 1
+    MZD_PKT_GET_ERR = 2
+
+
+@unique
+class MZD_PRBS_SELECTOR_TYPE(Enum):
+    MZD_PRBS31 = 0
+    MZD_PRBS7 = 1
+    MZD_PRBS9 = 2
+    MZD_PRBS23 = 3
+    MZD_IPRBS31 = 4
+    MZD_IPRBS7 = 5
+    MZD_IPRBS9 = 6
+    MZD_IPRBS23 = 7
+    MZD_PRBS15 = 8
+    MZD_IPRBS15 = 9
+    MZD_PRBS58 = 10
+    MZD_IPRBS58 = 11
+    MZD_PRBS13 = 12
+    MZD_IPRBS13 = 13
+    MZD_JP03AB = 14
+    MZD_GEN_TX = 15
+    MZD_PAM4_PRBS31Q = 100
+    MZD_PAM4_PRBS13Q = 17
+    MZD_PAM4_PRBS15Q = 18
+    MZD_PAM4_JP03A = 19
+    MZD_PAM4_JP03B = 20
+    MZD_PAM4_SSPRQ = 21
+
+
+@unique
+class MZD_PATTERN_AB_SELECTOR_TYPE(Enum):
+    MZD_PRBS_NONE = 0
+    MZD_JP03A = 1
+    MZD_JP03B = 2
+    MZD_LOW_FREQ = 3
+    MZD_SQUARE_WAV = 4
+    MZD_MIXED_FREQ = 5
+
+
+@unique
+class MZD_PIN_ID(Enum):
+    MZD_PIN_GPIO1 = 0
+    MZD_PIN_GPIO2 = 1
+    MZD_PIN_GPIO3 = 2
+    MZD_PIN_GPIO4 = 3
+    MZD_PIN_CLK_OUT_SE1 = 4
+    MZD_PIN_CLK_OUT_SE2 = 5
+    MZD_PIN_CLK_OUT_SE3 = 6
+    MZD_PIN_CLK_OUT_SE4 = 7
+    MZD_PIN_INTn = 8
+    MZD_PIN_NUMS = 9
+
+
+@unique
+class MZD_PIN_MODE(Enum):
+    MZD_PIN_MODE_GPIO = 0
+    MZD_PIN_MODE_LED = 1
+    MZD_PIN_MODE_INTR = 2
+    MZD_PIN_MODE_RCLK = 3
+    MZD_PIN_MODE_NUMS = 4
+
+
+@unique
+class MZD_MAC_TOD_INTR_TYPE(Enum):
+    MZD_MAC_TOD_INTR_TYPE_OVERRUN = 0
+    MZD_MAC_TOD_INTR_TYPE_UNDERRUN = 1
+    MZD_MAC_TOD_INTR_TYPE_BOTH = 2
+    MZD_MAC_TOD_INTR_TYPE_COUNT = 3
+
+
+@unique
+class MZD_DBG_LEVEL(Enum):
+    MZD_DBG_OFF_LVL = 0
+    MZD_DBG_ERR_LVL = 1
+    MZD_DBG_INF_LVL = 2
+    MZD_DBG_ALL_LVL = 3
+
+
+@unique
+class MCESD_BOOL(Enum):
+    MCESD_FALSE = 0
+    MCESD_TRUE = 1
+
+
+@unique
+class MCESD_DBG_LEVEL(Enum):
+    MCESD_DBG_OFF_LVL = 0
+    MCESD_DBG_ERR_LVL = 1
+    MCESD_DBG_INF_LVL = 2
+    MCESD_DBG_ALL_LVL = 3
+
+
+@unique
+class MCESD_DEVICE_ID(Enum):
+    DEVID_UNKNOWN = 0
+    DEVID_C28GPIPE4X2R2P0 = 1
+
+
+@unique
 class E_N5C112GX4_PHYMODE(Enum):
     N5C112GX4_PHYMODE_SERDES = 4
 
@@ -393,22 +635,51 @@ class E_N5C112GX4_SPD_CFG(Enum):
 
 
 @unique
-class MCESD_BOOL(Enum):
-    MCESD_FALSE = 0
-    MCESD_TRUE = 1
+class MZD_PACKET_TYPE(Enum):
+    MZD_PTP_ETHERTYPE = 0
+    MZD_PTP_IPV4 = 1
+    MZD_PTP_IPV6 = 2
+    MZD_PTP_IPV4_MPLS = 3
+    MZD_PTP_IPV6_MPLS = 4
+    MZD_PTP_ETH_PW_MPLS = 5
+    MZD_PTP_IPV4_PW_MPLS = 6
+    MZD_PTP_IPV6_PW_MPLS = 7
 
 
 @unique
-class MCESD_DBG_LEVEL(Enum):
-    MCESD_DBG_OFF_LVL = 0
-    MCESD_DBG_ERR_LVL = 1
-    MCESD_DBG_INF_LVL = 2
-    MCESD_DBG_ALL_LVL = 3
+class MZD_TAI_SELECT(Enum):
+    MZD_TAI0 = 0
+    MZD_TAI1 = 1
 
 
 @unique
-class MCESD_DEVICE_ID(Enum):
-    DEVID_UNKNOWN = 0
-    DEVID_C28GPIPE4X2R2P0 = 1
+class MZD_TOD_OP(Enum):
+    TOD_UPDATE = 0
+    TOD_FREQ_UPDATE = 1
+    TOD_INCREMENT = 2
+    TOD_DECREMENT = 3
+    TOD_CAPTURE = 4
+    TOD_GRACEFUL_INC = 5
+    TOD_GRACEFUL_DEC = 6
+    TOD_NOP = 7
+
+
+@unique
+class MZD_TAI_REF_CLK(Enum):
+    MZD_TAI_REF_CLK_0 = 0
+    MZD_TAI_REF_CLK_1 = 1
+    MZD_TAI_REF_CLK_2 = 2
+
+
+@unique
+class MZD_TAI_CLK(Enum):
+    MZD_TAI_CLK_0 = 0
+    MZD_TAI_CLK_1 = 1
+
+
+@unique
+class MZD_MACSEC_BLOCK(Enum):
+    MZD_MACSEC_CFYE = 1
+    MZD_MACSEC_SECY = 2
 
 

@@ -13,8 +13,7 @@ import logging
 import sys
 import shutil
 from enum_class import *
-from ctypes import *
-from mcesFunctionLib import *
+from mzdFunctionLib import *
 import importlib
 import time
 import traceback
@@ -76,6 +75,7 @@ if __name__ == '__main__':
 
     apiWrapper = mcesAPIPythonWrapper(host, port)
     apiWrapper.MZDInit()
+    pDev = apiWrapper.devHandle
 
     cur_time = time.strftime("%m-%d-%Y_%H-%M-%S", time.localtime())
     logging.basicConfig(level=logging.DEBUG,

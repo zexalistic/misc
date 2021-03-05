@@ -1,6 +1,4 @@
 # automatically generate Cpython wrapper file according to header files
-# Run this script under mzd/serdes/mces_wrapper
-# NOTE: this parser only support 1st order pointer; for higher level pointer please use another tool.
 
 import glob
 import os
@@ -46,11 +44,11 @@ class StructParse:
         """
 
         def __init__(self):
-            self.struct_name = None
-            self.struct_members = list()
-            self.struct_types = list()
-            self.pointer_flags = list()
-            self.member_idc = list()
+            self.struct_name = None                         # string
+            self.struct_members = list()                    # list of string
+            self.struct_types = list()                      # list of string/ctypes
+            self.pointer_flags = list()                     # list of bool
+            self.member_idc = list()                        # list of integer
 
     def generate_macro_dict(self, enum_parser):
         for h_file in self.h_files:
@@ -67,16 +65,6 @@ class StructParse:
                 self.macro_dict[member] = str(value)
 
     def generate_struct_class_list(self):
-        # TODO: Read the manually written structure class for device, for such structures are complicated in C code...
-        # with open('device_class.py') as fp:
-        #     contents = fp.read()
-        #     contents = re.findall(r'class\s+(\w+)[(]Structure[)]:\s+_fields_\s+=\s+\[([^\]]+)\]', contents)
-        #     for content in contents:
-        #         struct = self._Struct()
-        #         struct.struct_name = content[0]
-        #
-        #         self.struct_class_list.append(struct)
-
         # parse header files
         for h_file in self.h_files:
             with open(h_file, 'r') as fp:
@@ -133,6 +121,30 @@ class StructParse:
         the order index B as index(A) + index(C) + index(B). Then, index(B) will always be larger than A and C. Finally, by sorting order index with structure_class,
         I can get the correct order.
         """
+        # Read the manually written structure class for device, for such structures are complicated in C code...
+        device_class_list = list()
+        with open('device_class.py') as fp:
+            contents = fp.read()
+            contents = re.findall(r'class\s+(\w+)[(]Structure[)]:\s+_fields_\s+=\s+\[([^\]]+)\]', contents)
+            for content in contents:
+                struct = self._Struct()
+                struct.struct_name = content[0]
+                members = re.findall(r'\("(\w+)",\s+([\w(),*\s]+)\)', content[1])
+                struct_members, struct_types = zip(*members)
+                struct.struct_members = list(struct_members)
+                struct.struct_types = list(struct_types)
+                for idx in range(len(struct.struct_types)):
+                    #  Regard all types not as pointer in default
+                    struct.pointer_flags.append(False)
+                    if '*' in struct.struct_types[idx]:
+                        struct_type, member_idx = re.search(r'([\w(,)]+)\s+\*\s+(\d+)', struct.struct_types[idx]).groups()
+                        struct.struct_types[idx] = struct_type
+                        struct.member_idc.append(int(member_idx))
+                    else:
+                        struct.member_idc.append(0)
+                self.struct_class_list.append(struct)
+                device_class_list.append(struct.struct_name)
+
         # make sure type dict and structure class are synchronized
         type_dict.structure_class_list = list()
         for struct in self.struct_class_list:
@@ -188,6 +200,8 @@ class StructParse:
                     order_idx[i] += f' + eval(order_idx[{tmp}])'
                 elif struct_type in type_dict.enum_class_list:
                     struct_type = 'c_int'
+                elif struct.struct_name in device_class_list:
+                    pass
                 else:
                     logging.warning(f'Unrecognized type!! struct_name = {struct.struct_name}, struct_type = {struct_type}')
 
@@ -204,7 +218,7 @@ class StructParse:
             idx = eval(idx)
             order_idc.append(idx)
         tmp = list(zip(order_idc, updated_struct_list))
-        result = sorted(tmp, key=lambda x:x[0])
+        result = sorted(tmp, key=lambda x: x[0])
         self.struct_class_list = [item[1] for item in result]
 
     def write_structure_class_into_py(self):
@@ -506,7 +520,7 @@ class FunctionParser:
                 fp.write(f'    ret = func({arg_names})\n')
                 fp.write(f'    return ret\n\n\n')
 
-    def write_testcase(self):
+    def write_testcase(self, struct_parser, enum_parser):
         """
         Automatically generate testcases
         """
@@ -543,22 +557,22 @@ class FunctionParser:
                             logging_infos.append(f'    logging.debug(f"{arg_name}' + ' = {' + f'{arg_name}' + '}")\n')
                     elif arg_type in self.type_dict.structure_class_list:
                         attr_inits = []
-                        attr_list = eval(arg_type).__dict__['_fields_']
-                        for attr in attr_list:
-                            print(attr)
-                            attr_name = attr[0]
-                            attr_class = attr[1]
-                            # TODO: if the parameter of structure class is an array
-                            # if '*' in attr_class:
-                            #     idx = attr_class.split('*')[1]
-
-                            if attr_class == c_bool:
-                                attr_inits.append('0')  # 0 or 1
+                        for struct_tmp in struct_parser.struct_class_list:
+                            if arg_type == struct_tmp.struct_name:
+                                struct = struct_tmp
+                        for struct_member, struct_type, pointer_flag, member_idx in zip(struct.struct_members, struct.struct_types, struct.pointer_flags, struct.member_idc):
+                            # Whether the parameter is an array
+                            if member_idx:
+                                init_param_infos.append(f'    {struct_member} = ({struct_type} * {member_idx})()\n')
+                                init_param_infos.append(f'    {struct_member}_init = [0] * {member_idx}\n')
+                                init_param_infos.append(f'    for idx, value in enumerate({struct_member}_init):\n        {struct_member}[idx] = value\n')
+                                attr_inits.append(f'{struct_member}')
                             else:
-                                attr_inits.append('0')  # Just give it an initial value... Usually it is used for OUT
+                                attr_inits.append('0')                          # Just give it an initial value... Usually it is used for OUT
+                                logging_infos.append(f'    logging.debug(f"{arg_name}' + ' = {' + f'{arg_type}.{struct_member}' + '}")\n')
+
                         attr_init = ', '.join(attr_inits)
                         init_param_infos.append(f'    {arg_name} = {arg_type}({attr_init})\n')
-                        logging_infos.append(f'    logging.debug(f"{arg_name}' + ' = {' + f'{arg_type}.{attr_name}' + '}")\n')
                         if param.arg_pointer_flag:
                             init_param_infos.append(f'    {arg_name}_p = byref({arg_name})\n')
                             arg_name = arg_name + '_p'
@@ -594,14 +608,14 @@ if __name__ == '__main__':
     struct_parser = StructParse(h_files, enum_parser)
     type_dict = TypeDict(enum_parser, struct_parser)
     struct_parser.convert_structure_class_to_ctype(type_dict)
-    # struct_parser.write_structure_class_into_py()
+    struct_parser.write_structure_class_into_py()
 
     h_files = list()
     file_path_list = ['..\mzd\*.h']
     for file_path in file_path_list:
         h_files.extend(glob.glob(file_path))
     head_parser = FunctionParser(h_files, type_dict)
-    # TODO: add reload// use a more pleasant way
+    # import enum_class and structure_class. May there be a more pleasant way?
     from enum_class import *
     from structure_class import *
-    head_parser.write_testcase()
+    head_parser.write_testcase(struct_parser, enum_parser)

@@ -3,18 +3,6 @@ from ctypes import *
 
 MZDAPILib = CDLL("..\Debug\MZD.dll")
 
-class MCESD_DEV(Structure):
-    _fields_ = [("ipMajorRev", c_uint8),
-                ("ipMinorRev", c_uint8),
-                ("devEnabled", c_int),
-                ("fmcesdReadReg", CFUNCTYPE(c_void_p, c_uint32, POINTER(c_uint32))),
-                ("fmcesdWriteReg", CFUNCTYPE(c_void_p, c_uint32, c_uint32)),
-                ("fmcesdSetPinCfg", CFUNCTYPE(c_void_p, c_uint16, c_uint16)),
-                ("fmcesdGetPinCfg", CFUNCTYPE(c_void_p, c_uint16, POINTER(c_uint16))),
-                ("fmcesdWaitFunc", CFUNCTYPE(c_void_p, c_uint32)),
-                ("appData", c_void_p)]
-
-
 class MZD_PCS_LINK_STATUS(Structure):
     _fields_ = [("hostCurrent", c_uint16),
                 ("hostLatched", c_uint16),
@@ -42,12 +30,6 @@ class MZD_MODE_CONFIG(Structure):
 
 class MZD_MODE_OPTION_STRUCT(Structure):
     _fields_ = [("buffer", c_uint8 * 128)]
-
-
-class MZD_SERDES_CTRL(Structure):
-    _fields_ = [("serdesDev", MCESD_DEV),
-                ("serdesMapPort", c_uint16),
-                ("serdesMapHostLine", c_uint16)]
 
 
 class MZD_SERDES_EYE_RAW(Structure):
@@ -169,6 +151,40 @@ class MZD_TAI_PPS_PULSE(Structure):
                 ("ppsPulseCycNanoSec", c_uint32),
                 ("ppsPulseHiLvLen", c_uint32)]
 
+
+class MCESD_DEV(Structure):
+    _fields_ = [("ipMajorRev", c_uint8),
+                ("ipMinorRev", c_uint8),
+                ("devEnabled", c_int),
+                ("fmcesdReadReg", CFUNCTYPE(c_void_p, c_uint32, POINTER(c_uint32))),
+                ("fmcesdWriteReg", CFUNCTYPE(c_void_p, c_uint32, c_uint32)),
+                ("fmcesdSetPinCfg", CFUNCTYPE(c_void_p, c_uint16, c_uint16)),
+                ("fmcesdGetPinCfg", CFUNCTYPE(c_void_p, c_uint16, POINTER(c_uint16))),
+                ("fmcesdWaitFunc", CFUNCTYPE(c_void_p, c_uint32)),
+                ("appData", c_void_p)]
+
+
+class MZD_SERDES_CTRL(Structure):
+    _fields_ = [("serdesDev", MCESD_DEV),
+                ("serdesMapPort", c_uint16),
+                ("serdesMapHostLine", c_uint16)]
+
+
+class MZD_PCS_CHIP_INTR(Structure):
+    _fields_ = [("line", MZD_PCS_UNIT_INTR),
+                ("host", MZD_PCS_UNIT_INTR)]
+
+
+class MZD_SERDES_CHIP_INTR(Structure):
+    _fields_ = [("line", MZD_SERDES_UNIT_INTR),
+                ("host", MZD_SERDES_UNIT_INTR)]
+
+
+class MZD_MAC_CHIP_INTR(Structure):
+    _fields_ = [("lineMac", MZD_MAC_UNIT_INTR),
+                ("hostMac", MZD_MAC_UNIT_INTR)]
+
+
 class MZD_DEV(Structure):
     _fields_ = [("deviceId", c_int),
                 ("chipRevision", c_int),
@@ -198,21 +214,6 @@ class MZD_STATE_DUMP(Structure):
                 ("ffe", MZD_DIAG_FFE),
                 ("txFFE", MZD_DIAG_TX_FFE),
                 ("ctrlVal", c_uint32 * 64)]
-
-
-class MZD_PCS_CHIP_INTR(Structure):
-    _fields_ = [("line", MZD_PCS_UNIT_INTR),
-                ("host", MZD_PCS_UNIT_INTR)]
-
-
-class MZD_SERDES_CHIP_INTR(Structure):
-    _fields_ = [("line", MZD_SERDES_UNIT_INTR),
-                ("host", MZD_SERDES_UNIT_INTR)]
-
-
-class MZD_MAC_CHIP_INTR(Structure):
-    _fields_ = [("lineMac", MZD_MAC_UNIT_INTR),
-                ("hostMac", MZD_MAC_UNIT_INTR)]
 
 
 class MZD_GLOBAL_CHIP_INTR(Structure):

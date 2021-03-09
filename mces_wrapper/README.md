@@ -12,9 +12,5 @@ Run autogen.py
 1. Do not support #ifdef #endif...
 2. Do not support nested parsing... e.g. the parameter of a function pointer is another function pointer
 3. Only support three types of typedef: enum, struct and definition of struct+struct_pointer in one command.
-
-
-
-
-
+4. Only support simplest macros like this: #define VAR_NAME 0
 

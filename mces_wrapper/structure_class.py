@@ -1,8 +1,5 @@
 from ctypes import *
 
-
-MZDAPILib = CDLL("..\Debug\MZD.dll")
-
 class MZD_PCS_LINK_STATUS(Structure):
     _fields_ = [("hostCurrent", c_uint16),
                 ("hostLatched", c_uint16),

@@ -1,0 +1,37 @@
+{
+	"#": "@dll_path: the path of your DLL file generated from C code",
+	"dll_path": "..\\Debug\\MZD.dll",
+
+	"name_of_wrapper": "mzdFunctionLib.py",
+	"name_of_testcase": "Testcases_all.py",
+	"name_of_testcase_template": "testcase_template.py",
+
+	"#": "@header_files_to_parse: the header files where the functions to be wrapped exist. Must be a list",
+	"header_files_to_parse": ["..\\mzd\\*.h"],
+
+	"#": "@func_param_decorator: decorator of parameter of function, e.g. int main(IN int a);",
+	"func_param_decorator": "IN|OUT",
+
+	"#": "@header_files_included: the header files which are in the include path and contain customized variable types. Must be a list",
+	"header_files_included": ["..\\mzd\\*.h", "..\\mzd\\serdes\\*.h", "..\\mzd\\serdes\\C112GX4\\*.h", "..\\mzd\\ptp\\*.h", "..\\mzd\\macsec\\*.h"],
+
+	"#": "@func_header: the header of functions indicating it is a function. We only parse function with func headers. e.g. FUNC_HEADER int function(void);",
+	"func_header": "MZD_FUNC",
+
+	"#": "@func_pointer_dict: dictionary of function pointer. This is a backup interface, for the script automatically parse function pointers.",
+	"#": "Sample: {'MZD_FUNC_WAIT': 'c_void_p, c_uint'}.(Remember to substitute single quote with double quote)",
+	"func_pointer_dict": {},
+
+	"#": "@basic_type_dict: dictionary of basic C types except for type of pointers.",
+	"basic_type_dict": {"int8_t": "c_int8", "int16_t": "c_int16", "int32_t": "c_int32", "int64_t": "c_int64", "uint8_t": "c_uint8", "uint16_t": "c_uint16", "uint32_t": "c_uint32",
+		                "uint64_t": "c_uint64", "unsigned int": "c_uint", "int": "c_int", "float": "c_float", "double": "c_double", "char": "c_char", "const char": "c_char",
+		                "unsigned char": "c_ubyte",
+		                "MCESD_8": "c_int8", "MCESD_16": "c_int16", "MCESD_32": "c_int32", "MCESD_64": "c_int64", "MCESD_U8": "c_uint8", "MCESD_UINT": "c_uint", "MCESD_INT": "c_int",
+		                "MCESD_U16": "c_uint16", "MCESD_U32": "c_uint32", "MCESD_U64": "c_uint64", "MCESD_S8": "c_int8", "MCESD_S16": "c_int16", "MCESD_STATUS": "c_uint32",
+		                "MZD_8": "c_int8", "MZD_16": "c_int16", "MZD_32": "c_int32", "MZD_64": "c_int64", "MZD_U8": "c_uint8", "MZD_U16": "c_uint16", "MZD_U32": "c_uint32",
+		                "MZD_U64": "c_uint64", "MZD_S8": "c_int8", "MZD_S16": "c_int16", "MZD_STATUS": "c_uint32", "MZD_UINT": "c_uint", "MZD_INT": "c_int", "MZD_VOID": "c_int"},
+
+	"#": "@special_type_dict: dictionary of special C types, such as device handler.",
+	"#": "Sample: {'MCESD_16': 'c_int16'}.(Remember to substitute single quote with double quote)",
+	"special_type_dict": {"MCESD_DEV_PTR": "c_void_p", "MZD_PVOID": "c_void_p", "MZD_DEV_PTR":  "c_void_p", "Device_Handle_t": "c_void_p"}
+}

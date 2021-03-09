@@ -13,7 +13,6 @@ class MZD_INTERFACE(Enum):
     MZD_NUM_INTERFACE = 2
 
 
-@unique
 class MZD_DEVICE_ID(Enum):
     MZD_DEV_X7121M = 0
     MZD_DEV_X6142M = 1
@@ -24,7 +23,7 @@ class MZD_DEVICE_ID(Enum):
     MZD_DEV_X8181M = 9
     MZD_DEV_X9121P = 12
     MZD_DEV_X8181P = 13
-    MZD_DEV_X93160 = 14
+    MZD_DEV_X93160 = 0
     MZD_DEV_UNKNOWN = 255
 
 

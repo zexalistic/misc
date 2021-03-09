@@ -5,12 +5,12 @@ import glob
 import os
 import re
 import logging
-import shutil
 from ctypes import *
 import importlib
 import time
 import traceback
 import json
+import shutil
 
 
 def rm_c_comments(lines):
@@ -351,6 +351,7 @@ class FunctionParser(CommonParser):
         self.testcase = 'Testcases_all.py'              # Output testcase
         self.func_header = ''
         self.func_param_decorator = 'IN|OUT'
+        self.is_multiple_file = False
 
     class _Func:
         """
@@ -396,15 +397,31 @@ class FunctionParser(CommonParser):
                         param = self._Param(param_info=param_info)
                         param.arg_type, param.arg_pointer_flag = self.convert_to_ctypes(param.arg_type, param.arg_pointer_flag)
                         func.parameters.append(param)
-                    func.header_file = os.path.basename(h_file)
+                    func.header_file = os.path.basename(h_file)[:-2]
                     self.func_list.append(func)
 
     def write_funcs_to_wrapper(self):
-        with open(self.wrapper, 'w') as fp:
-            fp.write('from structure_class import *\n\n')
-            fp.write(f'{self.dll_name} = CDLL("{self.dll_path}")\n\n')
+        wrapper_name = self.wrapper
+        if self.is_multiple_file:
+            try:
+                os.mkdir('FunctionLib')
+            except FileExistsError:
+                logging.warning('Already exist FunctionLib// ... Now cleaning and rewrite the folder')
+                shutil.rmtree('FunctionLib')
+                os.mkdir('FunctionLib')
+        else:
+            with open(self.wrapper, 'w') as fp:
+                fp.write('from structure_class import *\n\n')
+                fp.write(f'{self.dll_name} = CDLL("{self.dll_path}")\n\n')
 
         for func in self.func_list:
+            if self.is_multiple_file:
+                self.wrapper = os.path.join('FunctionLib', func.header_file + '_' + wrapper_name)
+                if not os.path.exists(self.wrapper):
+                    with open(self.wrapper, 'w') as fp:
+                        fp.write('from structure_class import *\n\n')
+                        fp.write(f'{self.dll_name} = CDLL("{self.dll_path}")\n\n')
+
             with open(self.wrapper, 'a') as fp:
                 arg_names = func.get_arg_names()
                 fp.write(f'def {func.func_name}({arg_names}):\n')
@@ -541,19 +558,20 @@ class TypeParser(StructParser, EnumParser, FunctionParser):
         with open(config_json, 'r') as fp:
             self.env = json.load(fp)
 
-        header_files_included = self.env.get('header_files_included', ['*.h'])
-        for file_path in header_files_included:
-            self.h_files.extend(glob.glob(file_path))
-
         self.func_pointer_dict = self.env.get('func_pointer_dict', {})
         self.basic_type_dict = self.env.get('basic_type_dict', {})
         self.special_type_dict = self.env.get('special_type_dict', {})
 
-        self.wrapper = self.env.get('name_of_wrapper', 'FunctionLib.py')             # Name of Output wrapper                                                    # Name of CDLL
+        self.wrapper = self.env.get('name_of_wrapper', 'FunctionLib.py')             # Name of Output wrapper
         self.dll_path = self.env.get('dll_path', 'MZD.dll')
         self.testcase = self.env.get('name_of_testcase', 'Testcases_all.py')              # Output testcase
         self.func_header = self.env.get('func_header', '')
         self.func_param_decorator = self.env.get('func_param_decorator', '')
+        self.is_multiple_file = self.env.get('is_multiple_file', False)
+
+        header_files_included = self.env.get('header_files_included', ['*.h'])
+        for file_path in header_files_included:
+            self.h_files.extend(glob.glob(file_path))
 
         self.parse()
         self.write_to_file()
@@ -630,6 +648,6 @@ if __name__ == '__main__':
     parser = TypeParser()
     parser()
 
-    from enum_class import *
-    from structure_class import *
-    parser.write_testcase()
+    # from enum_class import *
+    # from structure_class import *
+    # parser.write_testcase()

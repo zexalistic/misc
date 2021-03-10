@@ -30,17 +30,22 @@ class CommonParser:
     Parent class for all parser
     """
     def __init__(self):
-        self.env = None                                 # Content in config.json
-        self.h_files = list()                          # list of header files
-        self.basic_type_dict = dict()
-        self.special_type_dict = dict()
-        self.func_pointer_dict = dict()
+        self.h_files = list()                           # list of header files
+        self.c_files = list()                           # list of C files to parse
+
         self.struct_pointer_dict = dict()               # key = name of struct pointer, value = name of struct
         self.macro_dict = dict()                        # key = name of macro, value = value of macro
         self.struct_class_name_list = list()            # name list of structure class
         self.enum_class_name_list = list()
         self.device_handler_name_list = list()
         self.struct_class_list = list()                 # list of structure
+
+        # Read from json
+        with open('config.json', 'r') as fp:
+            self.env = json.load(fp)
+        self.basic_type_dict = self.env.get('basic_type_dict', dict())
+        self.special_type_dict = self.env.get('special_type_dict', dict())
+        self.func_pointer_dict = self.env.get('func_pointer_dict', dict())
 
     class _Param:
         """
@@ -345,13 +350,13 @@ class FunctionParser(CommonParser):
     def __init__(self):
         super().__init__()
         self.func_list = list()
-        self.wrapper = 'FunctionLib.py'             # Name of Output wrapper
         self.dll_name = 'MZDAPILib'                     # Name of CDLL
-        self.dll_path = os.path.join('..', 'Debug', 'MZD.dll')
-        self.testcase = 'Testcases_all.py'              # Output testcase
-        self.func_header = ''
-        self.func_param_decorator = 'IN|OUT'
-        self.is_multiple_file = False
+        self.wrapper = self.env.get('name_of_wrapper', 'FunctionLib.py')  # Name of Output wrapper
+        self.dll_path = self.env.get('dll_path', 'MZD.dll')
+        self.testcase = self.env.get('name_of_testcase', 'Testcases_all.py')  # Output testcase
+        self.func_header = self.env.get('func_header', '')
+        self.func_param_decorator = self.env.get('func_param_decorator', '')
+        self.is_multiple_file = self.env.get('is_multiple_file', False)
 
     class _Func:
         """
@@ -372,7 +377,7 @@ class FunctionParser(CommonParser):
                     ret.append(param.arg_name)
             return ', '.join(ret)
 
-    def generate_func_list(self):
+    def generate_func_list_from_h_files(self):
         """
         parse all the header files in the target folder;
         get all the functions to be wrapped.
@@ -383,7 +388,7 @@ class FunctionParser(CommonParser):
                 contents = fp.read()
                 contents = rm_c_comments(contents)
                 # This pattern matching rule may have bugs in other cases
-                contents = re.findall(r'{}\s*([*\w]+) ([\w]+)([^;]+)'.format(self.func_header), contents)       # find all functions
+                contents = re.findall(r'{}\s*([*\w]+) ([\w]+)([^;]+);'.format(self.func_header), contents)       # find all functions
                 # For each function
                 for content in contents:
                     func = self._Func()
@@ -398,6 +403,30 @@ class FunctionParser(CommonParser):
                         param.arg_type, param.arg_pointer_flag = self.convert_to_ctypes(param.arg_type, param.arg_pointer_flag)
                         func.parameters.append(param)
                     func.header_file = os.path.basename(h_file)[:-2]
+                    self.func_list.append(func)
+
+    def generate_func_list_from_c_files(self):
+        for c_file in self.c_files:
+            with open(c_file) as fp:
+                contents = fp.read()
+                contents = rm_c_comments(contents)
+                # This pattern matching rule may have bugs in other cases
+                contents = re.findall(r'([*\w]+) ([\w]+)\s*\(([^;)]+)\)?\s*\{', contents)  # find all functions
+                for content in contents:
+                    if content[0] == 'else':           # remove else if clause
+                        continue
+                    func = self._Func()
+                    ret_type = content[0]
+                    func.ret_type, ret_ptr_flag = self.convert_to_ctypes(ret_type, False)           # Ignore the case that return value is a pointer
+                    func.func_name = content[1]
+                    param_infos = re.sub(r'[\n()]', '', content[2])                          # remove () and \n in parameters
+                    param_infos = param_infos.split(',')
+                    for param_info in param_infos:
+                        param_info = re.search(r'({})\s+([*\w\s]+)\s+([\[\]*\w]+)'.format(self.func_param_decorator), param_info).groups()
+                        param = self._Param(param_info=param_info)
+                        param.arg_type, param.arg_pointer_flag = self.convert_to_ctypes(param.arg_type, param.arg_pointer_flag)
+                        func.parameters.append(param)
+                    func.header_file = os.path.basename(c_file)[:-2]
                     self.func_list.append(func)
 
     def write_funcs_to_wrapper(self):
@@ -553,18 +582,25 @@ class TypeParser(StructParser, EnumParser, FunctionParser):
         EnumParser.__init__(self)
         FunctionParser.__init__(self)
 
-    def __call__(self, config_json='config.json'):
+    def __call__(self):
         """
         Main function when you use this parser
         """
-        self.read_from_json()
+        header_files_included = self.env.get('header_files_included', ['*.h'])
+        for file_path in header_files_included:
+            self.h_files.extend(glob.glob(file_path))
+
         self.parse()
         self.write_to_file()
 
         header_files_to_parse = self.env.get('header_files_to_parse', ['*.h'])
         for file_path in header_files_to_parse:
             self.h_files.extend(glob.glob(file_path))
-        self.generate_func_list()
+        c_files_to_parse = self.env.get('c_files_to_parse', ['*.c'])
+        for file_path in c_files_to_parse:
+            self.c_files.extend(glob.glob(file_path))
+        self.generate_func_list_from_h_files()
+        self.generate_func_list_from_c_files()
         self.write_funcs_to_wrapper()
 
     def parse(self):
@@ -583,26 +619,6 @@ class TypeParser(StructParser, EnumParser, FunctionParser):
         """
         self.write_enum_class_into_py()
         self.write_structure_class_into_py()
-
-    def read_from_json(self):
-        # Read from json
-        with open(config_json, 'r') as fp:
-            self.env = json.load(fp)
-
-        self.func_pointer_dict = self.env.get('func_pointer_dict', {})
-        self.basic_type_dict = self.env.get('basic_type_dict', {})
-        self.special_type_dict = self.env.get('special_type_dict', {})
-
-        self.wrapper = self.env.get('name_of_wrapper', 'FunctionLib.py')             # Name of Output wrapper
-        self.dll_path = self.env.get('dll_path', 'MZD.dll')
-        self.testcase = self.env.get('name_of_testcase', 'Testcases_all.py')              # Output testcase
-        self.func_header = self.env.get('func_header', '')
-        self.func_param_decorator = self.env.get('func_param_decorator', '')
-        self.is_multiple_file = self.env.get('is_multiple_file', False)
-
-        header_files_included = self.env.get('header_files_included', ['*.h'])
-        for file_path in header_files_included:
-            self.h_files.extend(glob.glob(file_path))
 
     def generate_macro_dict(self):
         for h_file in self.h_files:

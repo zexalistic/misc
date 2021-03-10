@@ -1,12 +1,13 @@
 ## Generate C to python wrapper automatically
-This a simple tool, which mainly focus on generating Cpython wrapper on embedded C project.
-The major idea of this tool is to parse header files and grasp the definition of functions 
-and customized variable types, then rewrite them in Cpython style.
+This a simple tool, which mainly focus on generating ctypes python wrapper on embedded C project.
+The major idea of this tool is to parse header files/C files and grasp the definition of functions 
+and customized variable types, then rewrite them in Ctypes style.
 
 ### How to use
-Follow the comment in config.json and change the value of parameters into your own value
-
-Run autogen.py
+1. Edit config.json
+2. Optional: edit device_class.py. Some C structures are complex with contains ifdef/endif...
+   Please leave those structures in device_class.py. The format is in Ctypes standard.
+3. Run autogen.py
 
 ### Limitation
 1. Do not support #ifdef #endif...

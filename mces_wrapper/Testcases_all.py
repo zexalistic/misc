@@ -7403,3 +7403,198 @@ if __name__ == '__main__':
     logging.debug(f"dumpOptions = {dumpOptions}")
     logging.info("\n")
 
+    logging.info("Function name : mzdSampleHMux4MacSecBypass")
+    mdioPort = 1
+    hostSideMode = MZD_OP_MODE.MZD_OP_MODE_UNKNOWN.value
+    try:
+        mzdSampleHMux4MacSecBypass(pDev, mdioPort, hostSideMode)
+    except Exception:
+        traceback.print_exc()
+    logging.debug(f"mdioPort = {mdioPort}")
+    logging.debug(f"hostSideMode = {hostSideMode}")
+    logging.info("\n")
+
+    logging.info("Function name : mzdSampleHMux8MacSecBypassPerLane")
+    hostSideMode = MZD_OP_MODE.MZD_OP_MODE_UNKNOWN.value
+    lowerPortsPrimary = MZD_BOOL.MZD_FALSE.value
+    try:
+        mzdSampleHMux8MacSecBypassPerLane(pDev, hostSideMode, lowerPortsPrimary)
+    except Exception:
+        traceback.print_exc()
+    logging.debug(f"hostSideMode = {hostSideMode}")
+    logging.debug(f"lowerPortsPrimary = {lowerPortsPrimary}")
+    logging.info("\n")
+
+    logging.info("Function name : mzdSampleHMux8MacSecEnable")
+    hostSideMode = MZD_OP_MODE.MZD_OP_MODE_UNKNOWN.value
+    lowerPortsPrimary = MZD_BOOL.MZD_FALSE.value
+    try:
+        mzdSampleHMux8MacSecEnable(pDev, hostSideMode, lowerPortsPrimary)
+    except Exception:
+        traceback.print_exc()
+    logging.debug(f"hostSideMode = {hostSideMode}")
+    logging.debug(f"lowerPortsPrimary = {lowerPortsPrimary}")
+    logging.info("\n")
+
+    logging.info("Function name : mzdSampleHMux8DeMuxInitMacSecBypass")
+    hostSideMode = MZD_OP_MODE.MZD_OP_MODE_UNKNOWN.value
+    lineSideMode = MZD_OP_MODE.MZD_OP_MODE_UNKNOWN.value
+    lowerPortsPrimary = MZD_BOOL.MZD_FALSE.value
+    try:
+        mzdSampleHMux8DeMuxInitMacSecBypass(pDev, hostSideMode, lineSideMode, lowerPortsPrimary)
+    except Exception:
+        traceback.print_exc()
+    logging.debug(f"hostSideMode = {hostSideMode}")
+    logging.debug(f"lineSideMode = {lineSideMode}")
+    logging.debug(f"lowerPortsPrimary = {lowerPortsPrimary}")
+    logging.info("\n")
+
+    logging.info("Function name : mzdSampleLoadImageFile")
+    filename = 1
+    filename_p = c_char(filename)
+    imageSize = 1
+    imageSize_p = c_uint32(imageSize)
+    pFirmwareImage = 1
+    pFirmwareImage_p = c_uint8(pFirmwareImage)
+    try:
+        mzdSampleLoadImageFile(filename_p, imageSize_p, pFirmwareImage_p)
+    except Exception:
+        traceback.print_exc()
+    logging.debug(f"filename = {filename_p.value}")
+    logging.debug(f"imageSize = {imageSize_p.value}")
+    logging.debug(f"pFirmwareImage = {pFirmwareImage_p.value}")
+    logging.info("\n")
+
+    logging.info("Function name : mzdSampleReloadDriver")
+    mdioPort = 1
+    try:
+        mzdSampleReloadDriver(mdioPort, pHostContext, pDev)
+    except Exception:
+        traceback.print_exc()
+    logging.debug(f"mdioPort = {mdioPort}")
+    logging.info("\n")
+
+    logging.info("Function name : mzdSampleSetPCSMode")
+    mdioPort = 1
+    laneOffset = 1
+    modeOptionSel = 1
+    buffer = (c_uint8 * 128)()
+    buffer_init = [0] * 128
+    for idx, value in enumerate(buffer_init):
+        buffer[idx] = value
+    modeOption = MZD_MODE_OPTION_STRUCT(buffer)
+    hostMode = MZD_OP_MODE.MZD_OP_MODE_UNKNOWN.value
+    lineMode = MZD_OP_MODE.MZD_OP_MODE_UNKNOWN.value
+    pollLinkStatus = MZD_BOOL.MZD_FALSE.value
+    try:
+        mzdSampleSetPCSMode(pDev, mdioPort, laneOffset, modeOptionSel, modeOption, hostMode, lineMode, pollLinkStatus)
+    except Exception:
+        traceback.print_exc()
+    logging.debug(f"mdioPort = {mdioPort}")
+    logging.debug(f"laneOffset = {laneOffset}")
+    logging.debug(f"modeOptionSel = {modeOptionSel}")
+    logging.debug(f"hostMode = {hostMode}")
+    logging.debug(f"lineMode = {lineMode}")
+    logging.debug(f"pollLinkStatus = {pollLinkStatus}")
+    logging.info("\n")
+
+    logging.info("Function name : mzdSamplePRBSTest")
+    mdioPort = 1
+    laneOffset = 1
+    try:
+        mzdSamplePRBSTest(pDev0, pDev1, mdioPort, laneOffset)
+    except Exception:
+        traceback.print_exc()
+    logging.debug(f"mdioPort = {mdioPort}")
+    logging.debug(f"laneOffset = {laneOffset}")
+    logging.info("\n")
+
+    logging.info("Function name : mzdSampleLoopbackPacketGen")
+    mdioPort0 = 1
+    mdioPort1 = 1
+    laneOffset = 1
+    try:
+        mzdSampleLoopbackPacketGen(pDev0, pDev1, mdioPort0, mdioPort1, laneOffset)
+    except Exception:
+        traceback.print_exc()
+    logging.debug(f"mdioPort0 = {mdioPort0}")
+    logging.debug(f"mdioPort1 = {mdioPort1}")
+    logging.debug(f"laneOffset = {laneOffset}")
+    logging.info("\n")
+
+    logging.info("Function name : mzdSampleGetEyeWidthHeight")
+    mdioPort = 1
+    host_or_line = 1
+    laneOffset = 1
+    eyeTMB = E_N5C112GX4_EYE_TMB.N5C112GX4_EYE_MID.value
+    eyeWidth = 1
+    eyeWidth_p = c_uint16(eyeWidth)
+    eyeHeight = 1
+    eyeHeight_p = c_uint16(eyeHeight)
+    try:
+        mzdSampleGetEyeWidthHeight(pDev, mdioPort, host_or_line, laneOffset, eyeTMB, eyeWidth_p, eyeHeight_p)
+    except Exception:
+        traceback.print_exc()
+    logging.debug(f"mdioPort = {mdioPort}")
+    logging.debug(f"host_or_line = {host_or_line}")
+    logging.debug(f"laneOffset = {laneOffset}")
+    logging.debug(f"eyeTMB = {eyeTMB}")
+    logging.debug(f"eyeWidth = {eyeWidth_p.value}")
+    logging.debug(f"eyeHeight = {eyeHeight_p.value}")
+    logging.info("\n")
+
+    logging.info("Function name : mzdSampleGetEye")
+    mdioPort = 1
+    host_or_line = 1
+    laneOffset = 1
+    voltageSteps = 1
+    phaseLevels = 1
+    try:
+        mzdSampleGetEye(pDev, mdioPort, host_or_line, laneOffset, voltageSteps, phaseLevels)
+    except Exception:
+        traceback.print_exc()
+    logging.debug(f"mdioPort = {mdioPort}")
+    logging.debug(f"host_or_line = {host_or_line}")
+    logging.debug(f"laneOffset = {laneOffset}")
+    logging.debug(f"voltageSteps = {voltageSteps}")
+    logging.debug(f"phaseLevels = {phaseLevels}")
+    logging.info("\n")
+
+    logging.info("Function name : mzdSampleGetTemperature")
+    mdioPort = 1
+    temperature = 1
+    temperature_p = c_int32(temperature)
+    try:
+        mzdSampleGetTemperature(pDev, mdioPort, temperature_p)
+    except Exception:
+        traceback.print_exc()
+    logging.debug(f"mdioPort = {mdioPort}")
+    logging.debug(f"temperature = {temperature_p.value}")
+    logging.info("\n")
+
+    logging.info("Function name : mzdSampleSetCTLE")
+    mdioPort = 1
+    host_or_line = 1
+    laneOffset = 1
+    ctleParamType = E_N5C112GX4_CTLE_PARAM.N5C112GX4_RX_DC_TERM_EN.value
+    paramValue = 1
+    try:
+        mzdSampleSetCTLE(pDev, mdioPort, host_or_line, laneOffset, ctleParamType, paramValue)
+    except Exception:
+        traceback.print_exc()
+    logging.debug(f"mdioPort = {mdioPort}")
+    logging.debug(f"host_or_line = {host_or_line}")
+    logging.debug(f"laneOffset = {laneOffset}")
+    logging.debug(f"ctleParamType = {ctleParamType}")
+    logging.debug(f"paramValue = {paramValue}")
+    logging.info("\n")
+
+    logging.info("Function name : mzdSampleSerdesMux")
+    host_or_line = 1
+    try:
+        mzdSampleSerdesMux(pDev0, pDev1, host_or_line)
+    except Exception:
+        traceback.print_exc()
+    logging.debug(f"host_or_line = {host_or_line}")
+    logging.info("\n")
+

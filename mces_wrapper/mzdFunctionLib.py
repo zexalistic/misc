@@ -6900,3 +6900,321 @@ def mzdMacSecHmuxConfigDump(pDev, mdioPort, dumpOptions):
     return ret
 
 
+def mzdSampleHMux4MacSecBypass(pDev, mdioPort, hostSideMode):
+    """
+    :param pDev: argument type c_void_p
+    :param mdioPort: argument type c_uint16
+    :param hostSideMode: member from enumerate class MZD_OP_MODE
+    """
+    func = MZDAPILib["mzdSampleHMux4MacSecBypass"]
+    func.argtypes = [c_void_p, c_uint16, c_int]
+    func.restype = c_uint32
+    ret = func(pDev, mdioPort, hostSideMode)
+    return ret
+
+
+def mzdSampleHMux8MacSecBypassPerLane(pDev, hostSideMode, lowerPortsPrimary):
+    """
+    :param pDev: argument type c_void_p
+    :param hostSideMode: member from enumerate class MZD_OP_MODE
+    :param lowerPortsPrimary: member from enumerate class MZD_BOOL
+    """
+    func = MZDAPILib["mzdSampleHMux8MacSecBypassPerLane"]
+    func.argtypes = [c_void_p, c_int, c_int]
+    func.restype = c_uint32
+    ret = func(pDev, hostSideMode, lowerPortsPrimary)
+    return ret
+
+
+def mzdSampleHMux8MacSecEnable(pDev, hostSideMode, lowerPortsPrimary):
+    """
+    :param pDev: argument type c_void_p
+    :param hostSideMode: member from enumerate class MZD_OP_MODE
+    :param lowerPortsPrimary: member from enumerate class MZD_BOOL
+    """
+    func = MZDAPILib["mzdSampleHMux8MacSecEnable"]
+    func.argtypes = [c_void_p, c_int, c_int]
+    func.restype = c_uint32
+    ret = func(pDev, hostSideMode, lowerPortsPrimary)
+    return ret
+
+
+def mzdSampleHMux8DeMuxInitMacSecBypass(pDev, hostSideMode, lineSideMode, lowerPortsPrimary):
+    """
+    :param pDev: argument type c_void_p
+    :param hostSideMode: member from enumerate class MZD_OP_MODE
+    :param lineSideMode: member from enumerate class MZD_OP_MODE
+    :param lowerPortsPrimary: member from enumerate class MZD_BOOL
+    """
+    func = MZDAPILib["mzdSampleHMux8DeMuxInitMacSecBypass"]
+    func.argtypes = [c_void_p, c_int, c_int, c_int]
+    func.restype = c_uint32
+    ret = func(pDev, hostSideMode, lineSideMode, lowerPortsPrimary)
+    return ret
+
+
+def mzdSampleHMux8DeMux2MacSecBypass(pDev):
+    """
+    :param pDev: argument type c_void_p
+    """
+    func = MZDAPILib["mzdSampleHMux8DeMux2MacSecBypass"]
+    func.argtypes = [c_void_p]
+    func.restype = c_uint32
+    ret = func(pDev)
+    return ret
+
+
+def mzdSampleHMux8DeMux2MixSpeed(pDev):
+    """
+    :param pDev: argument type c_void_p
+    """
+    func = MZDAPILib["mzdSampleHMux8DeMux2MixSpeed"]
+    func.argtypes = [c_void_p]
+    func.restype = c_uint32
+    ret = func(pDev)
+    return ret
+
+
+def mzdSampleLoadImageFile(filename_p, imageSize_p, pFirmwareImage_p):
+    """
+    :param filename_p: A pointer of c_char
+    :param imageSize_p: A pointer of c_uint32
+    :param pFirmwareImage_p: A pointer of c_uint8
+    """
+    func = MZDAPILib["mzdSampleLoadImageFile"]
+    func.argtypes = [POINTER(c_char), POINTER(c_uint32), POINTER(c_uint8)]
+    func.restype = c_uint32
+    ret = func(filename_p, imageSize_p, pFirmwareImage_p)
+    return ret
+
+
+def mzdSampleUnloadDrv(pDev):
+    """
+    :param pDev: argument type c_void_p
+    """
+    func = MZDAPILib["mzdSampleUnloadDrv"]
+    func.argtypes = [c_void_p]
+    func.restype = c_uint32
+    ret = func(pDev)
+    return ret
+
+
+def mzdSampleInitDrv(pHostContext, mdioFirstPort, mzdFuncReadMdio_p, mzdFuncWriteMdio_p, mzdFuncWait_p, serdesRead_p, serdesWrite_p, mzdUseFlash, pDev):
+    """
+    :param pHostContext: argument type c_void_p
+    :param mdioFirstPort: argument type c_uint16
+    :param mzdFuncReadMdio: a function pointer
+    :param mzdFuncWriteMdio: a function pointer
+    :param mzdFuncWait: a function pointer
+    :param serdesRead: a function pointer
+    :param serdesWrite: a function pointer
+    :param mzdUseFlash: member from enumerate class MZD_BOOL
+    :param pDev: argument type c_void_p
+    """
+    func = MZDAPILib["mzdSampleInitDrv"]
+    func.argtypes = [c_void_p, c_uint16, CFUNCTYPE(c_void_p, c_uint16, c_uint16, c_uint16, POINTER(c_uint16)), CFUNCTYPE(c_void_p, c_uint16, c_uint16, c_uint16, c_uint16), CFUNCTYPE(c_void_p, c_uint), CFUNCTYPE(c_void_p, c_uint32, POINTER(c_uint32)), CFUNCTYPE(c_void_p, c_uint32, c_uint32), c_int, c_void_p]
+    func.restype = c_uint32
+    ret = func(pHostContext, mdioFirstPort, mzdFuncReadMdio_p, mzdFuncWriteMdio_p, mzdFuncWait_p, serdesRead_p, serdesWrite_p, mzdUseFlash, pDev)
+    return ret
+
+
+def mzdSampleUpdateFlash(pDev):
+    """
+    :param pDev: argument type c_void_p
+    """
+    func = MZDAPILib["mzdSampleUpdateFlash"]
+    func.argtypes = [c_void_p]
+    func.restype = c_uint32
+    ret = func(pDev)
+    return ret
+
+
+def mzdSampleEraseFlash(pDev):
+    """
+    :param pDev: argument type c_void_p
+    """
+    func = MZDAPILib["mzdSampleEraseFlash"]
+    func.argtypes = [c_void_p]
+    func.restype = c_uint32
+    ret = func(pDev)
+    return ret
+
+
+def mzdSampleInitDrvParallelLoad(pHostContext, mdioFirstPort, mzdFuncReadMdio_p, mzdFuncWriteMdio_p, mzdFuncWait_p, serdesRead_p, serdesWrite_p, pDev0, pDev1):
+    """
+    :param pHostContext: argument type c_void_p
+    :param mdioFirstPort: argument type c_uint16
+    :param mzdFuncReadMdio: a function pointer
+    :param mzdFuncWriteMdio: a function pointer
+    :param mzdFuncWait: a function pointer
+    :param serdesRead: a function pointer
+    :param serdesWrite: a function pointer
+    :param pDev0: argument type c_void_p
+    :param pDev1: argument type c_void_p
+    """
+    func = MZDAPILib["mzdSampleInitDrvParallelLoad"]
+    func.argtypes = [c_void_p, c_uint16, CFUNCTYPE(c_void_p, c_uint16, c_uint16, c_uint16, POINTER(c_uint16)), CFUNCTYPE(c_void_p, c_uint16, c_uint16, c_uint16, c_uint16), CFUNCTYPE(c_void_p, c_uint), CFUNCTYPE(c_void_p, c_uint32, POINTER(c_uint32)), CFUNCTYPE(c_void_p, c_uint32, c_uint32), c_void_p, c_void_p]
+    func.restype = c_uint32
+    ret = func(pHostContext, mdioFirstPort, mzdFuncReadMdio_p, mzdFuncWriteMdio_p, mzdFuncWait_p, serdesRead_p, serdesWrite_p, pDev0, pDev1)
+    return ret
+
+
+def mzdSampleParallelUpdateFlash(pDev0, pDev1):
+    """
+    :param pDev0: argument type c_void_p
+    :param pDev1: argument type c_void_p
+    """
+    func = MZDAPILib["mzdSampleParallelUpdateFlash"]
+    func.argtypes = [c_void_p, c_void_p]
+    func.restype = c_uint32
+    ret = func(pDev0, pDev1)
+    return ret
+
+
+def mzdSampleParallelEraseFlash(pDev0, pDev1):
+    """
+    :param pDev0: argument type c_void_p
+    :param pDev1: argument type c_void_p
+    """
+    func = MZDAPILib["mzdSampleParallelEraseFlash"]
+    func.argtypes = [c_void_p, c_void_p]
+    func.restype = c_uint32
+    ret = func(pDev0, pDev1)
+    return ret
+
+
+def mzdSampleReloadDriver(mdioPort, pHostContext, pDev):
+    """
+    :param mdioPort: argument type c_uint16
+    :param pHostContext: argument type c_void_p
+    :param pDev: argument type c_void_p
+    """
+    func = MZDAPILib["mzdSampleReloadDriver"]
+    func.argtypes = [c_uint16, c_void_p, c_void_p]
+    func.restype = c_uint32
+    ret = func(mdioPort, pHostContext, pDev)
+    return ret
+
+
+def mzdSampleSetPCSMode(pDev, mdioPort, laneOffset, modeOptionSel, modeOption, hostMode, lineMode, pollLinkStatus):
+    """
+    :param pDev: argument type c_void_p
+    :param mdioPort: argument type c_uint16
+    :param laneOffset: argument type c_uint16
+    :param modeOptionSel: argument type c_uint32
+    :param modeOption: implementation of the structure class MZD_MODE_OPTION_STRUCT
+    :param hostMode: member from enumerate class MZD_OP_MODE
+    :param lineMode: member from enumerate class MZD_OP_MODE
+    :param pollLinkStatus: member from enumerate class MZD_BOOL
+    """
+    func = MZDAPILib["mzdSampleSetPCSMode"]
+    func.argtypes = [c_void_p, c_uint16, c_uint16, c_uint32, MZD_MODE_OPTION_STRUCT, c_int, c_int, c_int]
+    func.restype = c_uint32
+    ret = func(pDev, mdioPort, laneOffset, modeOptionSel, modeOption, hostMode, lineMode, pollLinkStatus)
+    return ret
+
+
+def mzdSamplePRBSTest(pDev0, pDev1, mdioPort, laneOffset):
+    """
+    :param pDev0: argument type c_void_p
+    :param pDev1: argument type c_void_p
+    :param mdioPort: argument type c_uint16
+    :param laneOffset: argument type c_uint16
+    """
+    func = MZDAPILib["mzdSamplePRBSTest"]
+    func.argtypes = [c_void_p, c_void_p, c_uint16, c_uint16]
+    func.restype = c_uint32
+    ret = func(pDev0, pDev1, mdioPort, laneOffset)
+    return ret
+
+
+def mzdSampleLoopbackPacketGen(pDev0, pDev1, mdioPort0, mdioPort1, laneOffset):
+    """
+    :param pDev0: argument type c_void_p
+    :param pDev1: argument type c_void_p
+    :param mdioPort0: argument type c_uint16
+    :param mdioPort1: argument type c_uint16
+    :param laneOffset: argument type c_uint16
+    """
+    func = MZDAPILib["mzdSampleLoopbackPacketGen"]
+    func.argtypes = [c_void_p, c_void_p, c_uint16, c_uint16, c_uint16]
+    func.restype = c_uint32
+    ret = func(pDev0, pDev1, mdioPort0, mdioPort1, laneOffset)
+    return ret
+
+
+def mzdSampleGetEyeWidthHeight(pDev, mdioPort, host_or_line, laneOffset, eyeTMB, eyeWidth_p, eyeHeight_p):
+    """
+    :param pDev: argument type c_void_p
+    :param mdioPort: argument type c_uint16
+    :param host_or_line: argument type c_uint16
+    :param laneOffset: argument type c_uint16
+    :param eyeTMB: member from enumerate class E_N5C112GX4_EYE_TMB
+    :param eyeWidth_p: A pointer of c_uint16
+    :param eyeHeight_p: A pointer of c_uint16
+    """
+    func = MZDAPILib["mzdSampleGetEyeWidthHeight"]
+    func.argtypes = [c_void_p, c_uint16, c_uint16, c_uint16, c_int, POINTER(c_uint16), POINTER(c_uint16)]
+    func.restype = c_uint32
+    ret = func(pDev, mdioPort, host_or_line, laneOffset, eyeTMB, eyeWidth_p, eyeHeight_p)
+    return ret
+
+
+def mzdSampleGetEye(pDev, mdioPort, host_or_line, laneOffset, voltageSteps, phaseLevels):
+    """
+    :param pDev: argument type c_void_p
+    :param mdioPort: argument type c_uint16
+    :param host_or_line: argument type c_uint16
+    :param laneOffset: argument type c_uint16
+    :param voltageSteps: argument type c_uint16
+    :param phaseLevels: argument type c_uint16
+    """
+    func = MZDAPILib["mzdSampleGetEye"]
+    func.argtypes = [c_void_p, c_uint16, c_uint16, c_uint16, c_uint16, c_uint16]
+    func.restype = c_uint32
+    ret = func(pDev, mdioPort, host_or_line, laneOffset, voltageSteps, phaseLevels)
+    return ret
+
+
+def mzdSampleGetTemperature(pDev, mdioPort, temperature_p):
+    """
+    :param pDev: argument type c_void_p
+    :param mdioPort: argument type c_uint16
+    :param temperature_p: A pointer of c_int32
+    """
+    func = MZDAPILib["mzdSampleGetTemperature"]
+    func.argtypes = [c_void_p, c_uint16, POINTER(c_int32)]
+    func.restype = c_uint32
+    ret = func(pDev, mdioPort, temperature_p)
+    return ret
+
+
+def mzdSampleSetCTLE(pDev, mdioPort, host_or_line, laneOffset, ctleParamType, paramValue):
+    """
+    :param pDev: argument type c_void_p
+    :param mdioPort: argument type c_uint16
+    :param host_or_line: argument type c_uint16
+    :param laneOffset: argument type c_uint16
+    :param ctleParamType: member from enumerate class E_N5C112GX4_CTLE_PARAM
+    :param paramValue: argument type c_uint32
+    """
+    func = MZDAPILib["mzdSampleSetCTLE"]
+    func.argtypes = [c_void_p, c_uint16, c_uint16, c_uint16, c_int, c_uint32]
+    func.restype = c_uint32
+    ret = func(pDev, mdioPort, host_or_line, laneOffset, ctleParamType, paramValue)
+    return ret
+
+
+def mzdSampleSerdesMux(pDev0, pDev1, host_or_line):
+    """
+    :param pDev0: argument type c_void_p
+    :param pDev1: argument type c_void_p
+    :param host_or_line: argument type c_uint16
+    """
+    func = MZDAPILib["mzdSampleSerdesMux"]
+    func.argtypes = [c_void_p, c_void_p, c_uint16]
+    func.restype = c_uint32
+    ret = func(pDev0, pDev1, host_or_line)
+    return ret
+
+

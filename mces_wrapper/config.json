@@ -5,9 +5,10 @@
 	"name_of_testcase_template": "testcase_template.py",
 	"func_param_decorator": "IN|OUT",
 	"header_files_to_parse": ["..\\mzd\\*.h"],
+	"c_files_to_parse": ["..\\mzd\\samples\\*.c"],
 	"header_files_included": ["..\\mzd\\*.h", "..\\mzd\\serdes\\*.h", "..\\mzd\\serdes\\C112GX4\\*.h", "..\\mzd\\ptp\\*.h", "..\\mzd\\macsec\\*.h"],
 	"func_header": "MZD_FUNC",
-	"is_multiple_file" : true,
+	"is_multiple_file" : false,
 
 	"func_pointer_dict": {},
 	"basic_type_dict": {"int8_t": "c_int8", "int16_t": "c_int16", "int32_t": "c_int32", "int64_t": "c_int64", "uint8_t": "c_uint8", "uint16_t": "c_uint16", "uint32_t": "c_uint32",

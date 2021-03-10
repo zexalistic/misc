@@ -5,9 +5,14 @@ and customized variable types, then rewrite them in Ctypes style.
 
 ### How to use
 1. Edit config.json
-2. Optional: edit device_class.py. Some C structures are complex with contains ifdef/endif...
+2. Optional: edit device_class.py. Some C structures are complex which contains ifdef/endif...
    Please leave those structures in device_class.py. The format is in Ctypes standard.
 3. Run autogen.py
+
+### How to use Ctypes Wrapper
+You need to compile the C project and generate a dynamic lib(.dll in windows and .so in Linux).
+Cpython support loading dll files while running C and will call the C function according to its name.
+This wrapper is an interface to wrap those C function into a python function.
 
 ### Limitation
 1. Do not support #ifdef #endif...

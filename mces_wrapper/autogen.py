@@ -586,18 +586,18 @@ class TypeParser(StructParser, EnumParser, FunctionParser):
         """
         Main function when you use this parser
         """
-        header_files_included = self.env.get('header_files_included', ['*.h'])
-        for file_path in header_files_included:
+        h_files_to_parse = self.env.get('h_files_to_parse', ['*.h'])
+        for file_path in h_files_to_parse:
             self.h_files.extend(glob.glob(file_path))
 
         self.parse()
         self.write_to_file()
 
-        header_files_to_parse = self.env.get('header_files_to_parse', ['*.h'])
-        for file_path in header_files_to_parse:
+        h_files_to_wrap = self.env.get('h_files_to_wrap', ['*.h'])
+        for file_path in h_files_to_wrap:
             self.h_files.extend(glob.glob(file_path))
-        c_files_to_parse = self.env.get('c_files_to_parse', ['*.c'])
-        for file_path in c_files_to_parse:
+        c_files_to_wrap = self.env.get('c_files_to_wrap', ['*.c'])
+        for file_path in c_files_to_wrap:
             self.c_files.extend(glob.glob(file_path))
         self.generate_func_list_from_h_files()
         self.generate_func_list_from_c_files()

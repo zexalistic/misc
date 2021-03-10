@@ -554,25 +554,10 @@ class TypeParser(StructParser, EnumParser, FunctionParser):
         FunctionParser.__init__(self)
 
     def __call__(self, config_json='config.json'):
-        # Read from json
-        with open(config_json, 'r') as fp:
-            self.env = json.load(fp)
-
-        self.func_pointer_dict = self.env.get('func_pointer_dict', {})
-        self.basic_type_dict = self.env.get('basic_type_dict', {})
-        self.special_type_dict = self.env.get('special_type_dict', {})
-
-        self.wrapper = self.env.get('name_of_wrapper', 'FunctionLib.py')             # Name of Output wrapper
-        self.dll_path = self.env.get('dll_path', 'MZD.dll')
-        self.testcase = self.env.get('name_of_testcase', 'Testcases_all.py')              # Output testcase
-        self.func_header = self.env.get('func_header', '')
-        self.func_param_decorator = self.env.get('func_param_decorator', '')
-        self.is_multiple_file = self.env.get('is_multiple_file', False)
-
-        header_files_included = self.env.get('header_files_included', ['*.h'])
-        for file_path in header_files_included:
-            self.h_files.extend(glob.glob(file_path))
-
+        """
+        Main function when you use this parser
+        """
+        self.read_from_json()
         self.parse()
         self.write_to_file()
 
@@ -598,6 +583,26 @@ class TypeParser(StructParser, EnumParser, FunctionParser):
         """
         self.write_enum_class_into_py()
         self.write_structure_class_into_py()
+
+    def read_from_json(self):
+        # Read from json
+        with open(config_json, 'r') as fp:
+            self.env = json.load(fp)
+
+        self.func_pointer_dict = self.env.get('func_pointer_dict', {})
+        self.basic_type_dict = self.env.get('basic_type_dict', {})
+        self.special_type_dict = self.env.get('special_type_dict', {})
+
+        self.wrapper = self.env.get('name_of_wrapper', 'FunctionLib.py')             # Name of Output wrapper
+        self.dll_path = self.env.get('dll_path', 'MZD.dll')
+        self.testcase = self.env.get('name_of_testcase', 'Testcases_all.py')              # Output testcase
+        self.func_header = self.env.get('func_header', '')
+        self.func_param_decorator = self.env.get('func_param_decorator', '')
+        self.is_multiple_file = self.env.get('is_multiple_file', False)
+
+        header_files_included = self.env.get('header_files_included', ['*.h'])
+        for file_path in header_files_included:
+            self.h_files.extend(glob.glob(file_path))
 
     def generate_macro_dict(self):
         for h_file in self.h_files:
@@ -648,6 +653,6 @@ if __name__ == '__main__':
     parser = TypeParser()
     parser()
 
-    # from enum_class import *
-    # from structure_class import *
-    # parser.write_testcase()
+    from enum_class import *
+    from structure_class import *
+    parser.write_testcase()

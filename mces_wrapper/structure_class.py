@@ -1,5 +1,6 @@
 from ctypes import *
 
+
 class MZD_PCS_LINK_STATUS(Structure):
     _fields_ = [("hostCurrent", c_uint16),
                 ("hostLatched", c_uint16),
@@ -108,6 +109,30 @@ class MCESD_FIELD(Structure):
                 ("retainMask", c_uint32)]
 
 
+class _MCESD_DEV(Structure):
+    _fields_ = [("ipMajorRev", c_uint8),
+                ("ipMinorRev", c_uint8),
+                ("devEnabled", c_int),
+                ("fmcesdReadReg", CFUNCTYPE(c_void_p, c_uint32, POINTER(c_uint32))),
+                ("fmcesdWriteReg", CFUNCTYPE(c_void_p, c_uint32, c_uint32)),
+                ("fmcesdSetPinCfg", CFUNCTYPE(c_void_p, c_uint16, c_uint16)),
+                ("fmcesdGetPinCfg", CFUNCTYPE(c_void_p, c_uint16, POINTER(c_uint16))),
+                ("fmcesdWaitFunc", CFUNCTYPE(c_void_p, c_uint32)),
+                ("appData", c_void_p)]
+
+
+class MCESD_DEV(Structure):
+    _fields_ = [("ipMajorRev", c_uint8),
+                ("ipMinorRev", c_uint8),
+                ("devEnabled", c_int),
+                ("fmcesdReadReg", CFUNCTYPE(c_void_p, c_uint32, POINTER(c_uint32))),
+                ("fmcesdWriteReg", CFUNCTYPE(c_void_p, c_uint32, c_uint32)),
+                ("fmcesdSetPinCfg", CFUNCTYPE(c_void_p, c_uint16, c_uint16)),
+                ("fmcesdGetPinCfg", CFUNCTYPE(c_void_p, c_uint16, POINTER(c_uint16))),
+                ("fmcesdWaitFunc", CFUNCTYPE(c_void_p, c_uint32)),
+                ("appData", c_void_p)]
+
+
 class MZD_PTP_EGRESS_TSQ(Structure):
     _fields_ = [("timestamp", c_uint32),
                 ("todUpdate", c_uint8),
@@ -136,6 +161,12 @@ class MZD_PTP_INGRESS_TSQ(Structure):
                 ("valid", c_int)]
 
 
+class MZD_SERDES_CTRL(Structure):
+    _fields_ = [("serdesDev", MCESD_DEV),
+                ("serdesMapPort", c_uint16),
+                ("serdesMapHostLine", c_uint16)]
+
+
 class MZD_TAI_TIME_ARRAY(Structure):
     _fields_ = [("todSecondsHigh", c_uint16),
                 ("todSecondsLow", c_uint32),
@@ -149,22 +180,38 @@ class MZD_TAI_PPS_PULSE(Structure):
                 ("ppsPulseHiLvLen", c_uint32)]
 
 
-class MCESD_DEV(Structure):
-    _fields_ = [("ipMajorRev", c_uint8),
-                ("ipMinorRev", c_uint8),
+class _MZD_DEV(Structure):
+    _fields_ = [("deviceId", c_int),
+                ("chipRevision", c_int),
+                ("mdioPort", c_uint16),
+                ("portCount", c_uint16),
+                ("hostConfig", MZD_MODE_CONFIG * 16),
+                ("lineConfig", MZD_MODE_CONFIG * 16),
                 ("devEnabled", c_int),
-                ("fmcesdReadReg", CFUNCTYPE(c_void_p, c_uint32, POINTER(c_uint32))),
-                ("fmcesdWriteReg", CFUNCTYPE(c_void_p, c_uint32, c_uint32)),
-                ("fmcesdSetPinCfg", CFUNCTYPE(c_void_p, c_uint16, c_uint16)),
-                ("fmcesdGetPinCfg", CFUNCTYPE(c_void_p, c_uint16, POINTER(c_uint16))),
-                ("fmcesdWaitFunc", CFUNCTYPE(c_void_p, c_uint32)),
-                ("appData", c_void_p)]
+                ("devFlash", c_int),
+                ("devInfo", c_uint32 * 4),
+                ("mzdFuncReadMdio", CFUNCTYPE(c_void_p, c_uint16, c_uint16, c_uint16, POINTER(c_uint16))),
+                ("mzdFuncWriteMdio", CFUNCTYPE(c_void_p, c_uint16, c_uint16, c_uint16, c_uint16)),
+                ("mzdFuncWait", CFUNCTYPE(c_void_p, c_uint)),
+                ("serdesCntl", MZD_SERDES_CTRL),
+                ("hostContext", c_void_p)]
 
 
-class MZD_SERDES_CTRL(Structure):
-    _fields_ = [("serdesDev", MCESD_DEV),
-                ("serdesMapPort", c_uint16),
-                ("serdesMapHostLine", c_uint16)]
+class MZD_DEV(Structure):
+    _fields_ = [("deviceId", c_int),
+                ("chipRevision", c_int),
+                ("mdioPort", c_uint16),
+                ("portCount", c_uint16),
+                ("hostConfig", MZD_MODE_CONFIG * 16),
+                ("lineConfig", MZD_MODE_CONFIG * 16),
+                ("devEnabled", c_int),
+                ("devFlash", c_int),
+                ("devInfo", c_uint32 * 4),
+                ("mzdFuncReadMdio", CFUNCTYPE(c_void_p, c_uint16, c_uint16, c_uint16, POINTER(c_uint16))),
+                ("mzdFuncWriteMdio", CFUNCTYPE(c_void_p, c_uint16, c_uint16, c_uint16, c_uint16)),
+                ("mzdFuncWait", CFUNCTYPE(c_void_p, c_uint)),
+                ("serdesCntl", MZD_SERDES_CTRL),
+                ("hostContext", c_void_p)]
 
 
 class MZD_PCS_CHIP_INTR(Structure):
@@ -180,23 +227,6 @@ class MZD_SERDES_CHIP_INTR(Structure):
 class MZD_MAC_CHIP_INTR(Structure):
     _fields_ = [("lineMac", MZD_MAC_UNIT_INTR),
                 ("hostMac", MZD_MAC_UNIT_INTR)]
-
-
-class MZD_DEV(Structure):
-    _fields_ = [("deviceId", c_int),
-                ("chipRevision", c_int),
-                ("mdioPort", c_uint16),
-                ("portCount", c_uint16),
-                ("hostConfig", MZD_MODE_CONFIG * 16),
-                ("lineConfig", MZD_MODE_CONFIG * 16),
-                ("devEnabled", c_int),
-                ("devFlash", c_int),
-                ("devInfo", c_int * 4),
-                ("mzdFuncReadMdio", CFUNCTYPE(c_void_p, c_uint16, c_uint16, c_uint16, POINTER(c_uint16))),
-                ("mzdFuncWriteMdio", CFUNCTYPE(c_void_p, c_uint16, c_uint16, c_uint16, c_uint16)),
-                ("mzdFuncWait", CFUNCTYPE(c_void_p, c_uint)),
-                ("serdesCntl", MZD_SERDES_CTRL),
-                ("hostContext", c_void_p)]
 
 
 class MZD_STATE_DUMP(Structure):

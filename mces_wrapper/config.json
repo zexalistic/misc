@@ -3,13 +3,12 @@
 	"name_of_wrapper": "wrapper.py",
 	"name_of_testcase": "Testcases_all.py",
 	"name_of_testcase_template": "testcase_template.py",
-	"func_param_decorator": "IN|OUT",
+	"func_param_decorator": "IN|OUT|INOUT",
 	"h_files_to_wrap": ["..\\mzd\\*.h"],
 	"c_files_to_wrap": ["..\\mzd\\samples\\*.c"],
 	"h_files_to_parse": ["..\\mzd\\*.h", "..\\mzd\\serdes\\*.h", "..\\mzd\\serdes\\C112GX4\\*.h", "..\\mzd\\ptp\\*.h", "..\\mzd\\macsec\\*.h"],
 	"func_header": "MZD_FUNC",
 	"is_multiple_file" : false,
-
 	"func_pointer_dict": {},
 	"basic_type_dict": {"int8_t": "c_int8", "int16_t": "c_int16", "int32_t": "c_int32", "int64_t": "c_int64", "uint8_t": "c_uint8", "uint16_t": "c_uint16", "uint32_t": "c_uint32",
 		                "uint64_t": "c_uint64", "unsigned int": "c_uint", "int": "c_int", "float": "c_float", "double": "c_double", "char": "c_char", "const char": "c_char",
@@ -18,7 +17,7 @@
 		                "MCESD_U16": "c_uint16", "MCESD_U32": "c_uint32", "MCESD_U64": "c_uint64", "MCESD_S8": "c_int8", "MCESD_S16": "c_int16", "MCESD_STATUS": "c_uint32",
 		                "MZD_8": "c_int8", "MZD_16": "c_int16", "MZD_32": "c_int32", "MZD_64": "c_int64", "MZD_U8": "c_uint8", "MZD_U16": "c_uint16", "MZD_U32": "c_uint32",
 		                "MZD_U64": "c_uint64", "MZD_S8": "c_int8", "MZD_S16": "c_int16", "MZD_STATUS": "c_uint32", "MZD_UINT": "c_uint", "MZD_INT": "c_int", "MZD_VOID": "c_int"},
-	"special_type_dict": {"MCESD_DEV_PTR": "c_void_p", "MZD_PVOID": "c_void_p", "MZD_DEV_PTR":  "c_void_p", "Device_Handle_t": "c_void_p"},
+	"exception_dict": {"MCESD_DEV_PTR": "c_void_p", "MZD_PVOID": "c_void_p", "MZD_DEV_PTR":  "c_void_p", "Device_Handle_t": "c_void_p", "MCESD_PVOID": "c_void_p"},
 
 	"#": "===============================================================Comment for this script===============================================================================",
 	"#": "@dll_path: the path of your DLL file generated from C code",
@@ -30,7 +29,8 @@
 	"#": "@is_multiple_file: write all wrappers in one file or in multiple files",
 	"#": "@func_pointer_dict: dictionary of function pointer. This is a backup interface, for the script automatically parse function pointers.",
 	"#": "                    Sample: {'MZD_FUNC_WAIT': 'c_void_p, c_uint'}.(Remember to substitute single quote with double quote)",
-	"#": "@basic_type_dict: dictionary of basic C types except for type of pointers.",
-	"#": "@special_type_dict: dictionary of special C types, such as device handler.",
-	"#": "Sample: {'MCESD_16': 'c_int16'}.(Remember to substitute single quote with double quote)"
+	"#": "@basic_type_dict: dictionary of basic C types except for types of pointers.",
+	"#": "@exception_dict: dictionary of some customized C types which are exceptions while parse.E.g. The device handler is a structure pointer in C, however, ",
+	"#": "                 we prefer to regard it as a void pointer and load the device with C code instead of python. \",",
+	"#": "                 We keep these varibales in exception_dict so that we will ignore the fact that these variables are structure pointers but a void pointer while writing the wrapper."
 }

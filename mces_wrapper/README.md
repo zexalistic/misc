@@ -5,9 +5,7 @@ and customized variable types, then rewrite them in Ctypes style.
 
 ### How to use
 1. Edit config.json
-2. Optional: edit device_class.py. Some C structures are complex which contains ifdef/endif...
-   Please leave those structures in device_class.py. The format is in Ctypes standard.
-3. Run autogen.py
+2. Run autogen.py
 
 ### How to use Ctypes Wrapper
 You need to compile the C project and generate a dynamic lib(.dll in windows and .so in Linux).
@@ -16,7 +14,10 @@ This wrapper is an interface to wrap those C function into a python function.
 
 ### Limitation
 1. Do not support #ifdef #endif...
-2. Do not support nested parsing... e.g. the parameter of a function pointer is another function pointer
-3. Only support three types of typedef: enum, struct and definition of struct+struct_pointer in one command.
+2. Do not support nested citation. e.g. the parameter of a function pointer is another function pointer
+3. Do not support union at present...
 4. Only support simplest macros like this: #define VAR_NAME 0
+
+### For more information
+You can see the samples in this folder.
 

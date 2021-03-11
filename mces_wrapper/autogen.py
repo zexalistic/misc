@@ -1,16 +1,16 @@
 # automatically generate Cpython wrapper file according to header files
 # Created by Yihao Liu on 2021/3/5
+# TODO: Add Union
 
 import glob
 import os
 import re
 import logging
-from ctypes import *
-import importlib
 import time
 import traceback
 import json
 import shutil
+import copy
 
 
 def rm_c_comments(lines):
@@ -37,14 +37,15 @@ class CommonParser:
         self.macro_dict = dict()                        # key = name of macro, value = value of macro
         self.struct_class_name_list = list()            # name list of structure class
         self.enum_class_name_list = list()
-        self.device_handler_name_list = list()
+        self.exception_list = list()                    # list of keys in exception dict
         self.struct_class_list = list()                 # list of structure
+
 
         # Read from json
         with open('config.json', 'r') as fp:
             self.env = json.load(fp)
         self.basic_type_dict = self.env.get('basic_type_dict', dict())
-        self.special_type_dict = self.env.get('special_type_dict', dict())
+        self.exception_dict = self.env.get('exception_dict', dict())
         self.func_pointer_dict = self.env.get('func_pointer_dict', dict())
 
     class _Param:
@@ -68,12 +69,11 @@ class CommonParser:
         """
         Convert customized variable type to ctype according to the type dict
         """
-        if self.special_type_dict.get(arg_type, 0):  # special type dict should be at the very beginning
-            arg_type = self.special_type_dict[arg_type]
+        if self.exception_dict.get(arg_type, 0):
+            arg_type = self.exception_dict[arg_type]
         elif self.basic_type_dict.get(arg_type, 0):
             arg_type = self.basic_type_dict[arg_type]
         elif arg_type in self.enum_class_name_list:
-            # arg_type = 'c_int'
             pass
         elif arg_type in self.struct_class_name_list:
             pass
@@ -113,13 +113,12 @@ class StructParser(CommonParser):
         # parse header files
         for h_file in self.h_files:
             with open(h_file, 'r') as fp:
-                contents = fp.read()
-                contents = rm_c_comments(contents)
-                contents = re.findall(r'typedef struct ([\s\w]+)[{]([^{}]+)[}]([\s\w,*]+);\s', contents)  # find all structure types
+                lines = fp.read()
+                lines = rm_c_comments(lines)
+                contents = re.findall(r'typedef struct ([\s\w]+)\{([^{}]+)\}([\s\w,*]+);\s', lines)             # match: typedef struct _a{}a, *ap;
                 for content in contents:
                     struct = self._Struct()
-                    struct_name = re.sub(r'[\s]', '', content[2])
-                    # match: typedef struct _a{}a, *ap;
+                    struct_name = re.sub(r'\s', '', content[2])
                     if re.search(r',\s*\*', struct_name):
                         struct_name, struct_pointer_name = re.search(r'(\w+),\s*\*(\w+)', struct_name).groups()
                         self.struct_pointer_dict[struct_pointer_name] = struct_name
@@ -153,6 +152,56 @@ class StructParser(CommonParser):
                     self.struct_class_list.append(struct)
                     self.struct_class_name_list.append(struct.struct_name)
 
+                contents = re.findall(r'struct\s*([\w]+)\s*\{([^}]+)?\}\s*;', lines)  # match: struct _a{};
+                for content in contents:
+                    struct = self._Struct()
+                    struct_name = re.sub(r'\s', '', content[0])
+                    struct.struct_name = struct_name
+                    struct_infos = content[1].split(';')
+                    for struct_info in struct_infos:
+                        struct_info = struct_info.strip()  # This is necessary
+                        tmp = re.findall(r'([\[\]*\w\s]+)\s+([^;}]+)', struct_info)  # parse the members of structure
+                        if tmp:  # filter the empty list
+                            member_type = tmp[0][0]
+                            member_name = tmp[0][1]
+                            member_type = member_type.strip()
+                            member_name = member_name.strip()
+                            # find the pointer, this part only support 1st order pointer
+                            if member_type.endswith('*'):
+                                struct.struct_types.append(member_type[:-1])
+                                struct.struct_members.append(member_name)
+                                struct.pointer_flags.append(True)
+                            elif member_name.endswith('[]'):
+                                struct.struct_types.append(member_type)
+                                struct.struct_members.append(member_name[:-2])
+                                struct.pointer_flags.append(True)
+                            elif member_name.startswith('*'):
+                                struct.struct_types.append(member_type)
+                                struct.struct_members.append(member_name[1:])
+                                struct.pointer_flags.append(True)
+                            else:
+                                struct.struct_types.append(member_type)
+                                struct.struct_members.append(member_name)
+                                struct.pointer_flags.append(False)
+                    self.struct_class_list.append(struct)
+                    self.struct_class_name_list.append(struct.struct_name)
+
+                    # find if there is any "typedef struct _struct_var struct_var;" or "typedef _struct_var* struct_var_ptr"; if so, add them to list
+                    struct_ptr = re.findall(r'typedef {}\s*\*\s*(\w+);'.format(struct.struct_name), lines)
+                    if struct_ptr:
+                        self.struct_pointer_dict[struct_ptr[0]] = struct.struct_name
+                    alias = re.findall(r'typedef struct {} (\w+);'.format(struct.struct_name), lines)
+                    if alias:
+                        struct_alias = copy.deepcopy(struct)
+                        struct_alias.struct_name = alias[0]
+                        self.struct_class_list.append(struct_alias)
+                        self.struct_class_name_list.append(alias[0])
+
+                        # find if there's any structure pointer
+                        struct_ptr = re.findall(r'typedef {}\s*\*\s*(\w+);'.format(alias[0]), lines)
+                        if struct_ptr:
+                            self.struct_pointer_dict[struct_ptr[0]] = alias[0]
+
     def convert_structure_class_to_ctype(self):
         """
         Convert customized type to ctypes here; convert C array to legal python ctypes here.
@@ -165,34 +214,6 @@ class StructParser(CommonParser):
         the order index B as index(A) + index(C) + index(B). Then, index(B) will always be larger than A and C. Finally, by sorting order index with structure_class,
         I can get the correct order.
         """
-        # Read the manually written structure class for device, for such structures are complicated in C code...
-        with open('device_class.py') as fp:
-            contents = fp.read()
-            contents = re.findall(r'class\s+(\w+)[(]Structure[)]:\s+_fields_\s+=\s+\[([^\]]+)\]', contents)
-            for content in contents:
-                struct = self._Struct()
-                struct.struct_name = content[0]
-                members = re.findall(r'\("(\w+)",\s+([\w(),*\s]+)\)', content[1])
-                struct_members, struct_types = zip(*members)
-                struct.struct_members = list(struct_members)
-                struct.struct_types = list(struct_types)
-                for idx in range(len(struct.struct_types)):
-                    #  Regard all types not as pointer in default
-                    struct.pointer_flags.append(False)
-                    if '*' in struct.struct_types[idx]:
-                        struct_type, member_idx = re.search(r'([\w(,)]+)\s+\*\s+(\d+)', struct.struct_types[idx]).groups()
-                        struct.struct_types[idx] = struct_type
-                        struct.member_idc.append(int(member_idx))
-                    else:
-                        struct.member_idc.append(0)
-                self.struct_class_list.append(struct)
-                self.device_handler_name_list.append(struct.struct_name)
-
-        # make sure structure class name list and structure class are synchronized
-        self.struct_class_name_list = list()
-        for struct in self.struct_class_list:
-            self.struct_class_name_list.append(struct.struct_name)
-
         order_idx = [f'{i}' for i in range(len(self.struct_class_list))]
         updated_struct_list = list()
 
@@ -235,7 +256,7 @@ class StructParser(CommonParser):
                         traceback.print_exc()
                         logging.error(f'Unrecognized macro: {idx}... {struct.struct_name}')
 
-                if struct.struct_name not in self.device_handler_name_list:
+                if struct.struct_name not in self.exception_list:
                     struct_type, pointer_flag = self.convert_to_ctypes(struct_type, pointer_flag)
 
                 if struct_type in self.struct_class_name_list:
@@ -265,7 +286,7 @@ class StructParser(CommonParser):
         generate struct_class.py. Since device structure is complicated... I just write the device structure by myself
         """
         with open('structure_class.py', 'w') as fp:
-            fp.write('from ctypes import *\n\n')
+            fp.write('from ctypes import *\n\n\n')
             for struct in self.struct_class_list:
                 fp.write(f'class {struct.struct_name}(Structure):\n    _fields_ = [')
                 info_list = []
@@ -354,7 +375,7 @@ class FunctionParser(CommonParser):
         self.wrapper = self.env.get('name_of_wrapper', 'FunctionLib.py')  # Name of Output wrapper
         self.dll_path = self.env.get('dll_path', 'MZD.dll')
         self.testcase = self.env.get('name_of_testcase', 'Testcases_all.py')  # Output testcase
-        self.func_header = self.env.get('func_header', '')
+        self.func_header = self.env.get('func_header', False)
         self.func_param_decorator = self.env.get('func_param_decorator', '')
         self.is_multiple_file = self.env.get('is_multiple_file', False)
 
@@ -388,12 +409,17 @@ class FunctionParser(CommonParser):
                 contents = fp.read()
                 contents = rm_c_comments(contents)
                 # This pattern matching rule may have bugs in other cases
-                contents = re.findall(r'{}\s*([*\w]+) ([\w]+)([^;]+);'.format(self.func_header), contents)       # find all functions
+                if self.func_header:
+                    contents = re.findall(r'{} ([*\w]+)\s+([\w]+)([^;]+);'.format(self.func_header), contents)       # find all functions
+                else:
+                    contents = re.findall(r'([*\w]+)\s+([\w]+)([^;]+);', contents)  # find all functions
                 # For each function
                 for content in contents:
                     func = self._Func()
                     ret_type = content[0]
                     func.ret_type, ret_ptr_flag = self.convert_to_ctypes(ret_type, False)           # Ignore the case that return value is a pointer
+                    if func.ret_type in self.enum_class_name_list:
+                        func.ret_type = 'c_int'
                     func.func_name = content[1]
                     param_infos = re.sub(r'[\n()]', '', content[2])                          # remove () and \n in parameters
                     param_infos = param_infos.split(',')
@@ -418,6 +444,8 @@ class FunctionParser(CommonParser):
                     func = self._Func()
                     ret_type = content[0]
                     func.ret_type, ret_ptr_flag = self.convert_to_ctypes(ret_type, False)           # Ignore the case that return value is a pointer
+                    if func.ret_type in self.enum_class_name_list:
+                        func.ret_type = 'c_int'
                     func.func_name = content[1]
                     param_infos = re.sub(r'[\n()]', '', content[2])                          # remove () and \n in parameters
                     param_infos = param_infos.split(',')
@@ -461,7 +489,7 @@ class FunctionParser(CommonParser):
                 for param in func.parameters:
                     arg_type = param.arg_type
                     arg_name = param.arg_name
-                    if arg_type in self.enum_class_name_list:
+                    if arg_type in self.enum_class_name_list:                   # convert customized varibale type to C type
                         if param.arg_pointer_flag:
                             arg_types.append('POINTER(c_int)')
                             fp.write(f'    :param {arg_name}_p: A pointer of the enumerate class {arg_type}\n')
@@ -591,7 +619,7 @@ class TypeParser(StructParser, EnumParser, FunctionParser):
             self.h_files.extend(glob.glob(file_path))
 
         self.parse()
-        self.write_to_file()
+        # self.write_to_file()
 
         h_files_to_wrap = self.env.get('h_files_to_wrap', ['*.h'])
         for file_path in h_files_to_wrap:

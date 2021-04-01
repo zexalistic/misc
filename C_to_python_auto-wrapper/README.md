@@ -14,7 +14,7 @@ and customized variable types, then rewrite them in Ctypes style.
 * Testcase_all.py: simple auto-generated testcases templates. You had better check it before running. 
 * You can change the names of output files in config.json
 
-### How to use Ctypes Wrapper
+### How to use Ctypes lib to run C code with python
 You need to compile the C project and generate a dynamic lib(.dll in windows).
 Cpython support loading dll files while running C and will call the C function according to its name.
 This wrapper is an interface to wrap those C function into a python function.

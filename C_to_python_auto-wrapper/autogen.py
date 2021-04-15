@@ -686,12 +686,24 @@ class TypeParser(StructParser, EnumParser, FunctionParser):
             with open(h_file, 'r') as fp:
                 contents = fp.read()
                 contents = rm_c_comments(contents)
-                m = re.compile(r'typedef\s*[\w\s]+\(\*([\w]+)\)([^;]+);')
+                m = re.compile(r'typedef\s*([\w*]+)\s+\(\*([\w]+)\)([^;]+);')
                 contents = re.findall(m, contents)
                 for content in contents:            # For each function pointer
-                    key = content[0]
                     value = list()
-                    args = re.findall(r'([\w*]+)\s+([*\w[\[\]]+)?', content[1])
+                    ret_type = content[0]
+                    if '*' in ret_type:
+                        ret_type, ret_pointer_flag = self.convert_to_ctypes(ret_type, True)
+                    else:
+                        ret_type, ret_pointer_flag = self.convert_to_ctypes(ret_type, False)
+                    if ret_type in self.enum_class_name_list:
+                        ret_type = 'c_int'
+                    if ret_pointer_flag:
+                        value.append(f'POINTER({ret_type})')
+                    else:
+                        value.append(f'{ret_type}')
+
+                    key = content[1]
+                    args = re.findall(r'([\w*]+)\s+([*\w[\[\]]+)?', content[2])
                     for arg in args:                # For each parameter
                         param_info = tuple([None]) + arg
                         param = self._Param(param_info=param_info)

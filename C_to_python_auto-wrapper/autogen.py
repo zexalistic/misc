@@ -357,9 +357,9 @@ class EnumParser(CommonParser):
 
     def write_enum_class_into_py(self):
         with open('enum_class.py', 'w') as f:
-            f.write('from enum import Enum, unique\n\n')
+            f.write('from enum import Enum, unique, IntEnum\n\n')
             for enum in self.enum_class_list:
-                f.write(f'@unique\nclass {enum.enum_name}(Enum):\n')
+                f.write(f'@unique\nclass {enum.enum_name}(IntEnum):\n')
                 for member, value in enum:
                     f.write(f'    {member} = {value}\n')
                 f.write('\n\n')
